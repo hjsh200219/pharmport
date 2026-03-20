@@ -1,0 +1,163 @@
+// PharmPort 데이터베이스 ERD
+// DB: Azure Database for PostgreSQL (Flexible Server)
+// 서버: teoul-testpg.postgres.database.azure.com
+// 데이터베이스: teoul_pharminfo
+// 테이블 수: 9개 | 총 레코드: ~456,523건
+
+Project PharmPort {
+  database_type: 'PostgreSQL'
+  Note: '의약품 성분 매칭 시스템 - Azure PostgreSQL Flexible Server'
+}
+
+// ============================================================
+// 팜포트 내부 테이블 (FK 설정됨)
+// ============================================================
+
+Table pharmport_medicine [headercolor: #3498db] {
+  medicine_id int [pk, increment, not null, note: '의약품 고유 ID']
+  medicine_name varchar(200) [unique, not null, note: '의약품명']
+  manufacturer varchar(200) [unique, note: '제조사']
+  color varchar(100) [note: '색상']
+  storage text [note: '보관 방법']
+  ingredients text [note: '성분 정보']
+  sorted_ingredients text [note: '알파벳순 정렬된 성분 (40,836건)']
+  product_code varchar(100) [note: '제품 코드 → ProductInfos.ProductCode 논리적 매칭']
+  ingredient_code varchar(100) [note: '성분 코드 → 터울주성분.심평원성분코드 논리적 매칭']
+  ingredient_embedding vector [note: 'vector(3072) 성분 임베딩']
+  embedding vector [note: '통합 임베딩']
+  medicine_name_embedding vector [note: '의약품명 임베딩']
+  manufacturer_embedding vector [note: '제조사 임베딩']
+  sorted_ingredient_embedding vector [note: 'vector(3072) 정렬 성분 임베딩 (40,836건)']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`, note: '생성일시']
+
+  Note: '핵심 허브 테이블 — 40,837건'
+}
+
+Table pharmport_extra_text [headercolor: #2ecc71] {
+  extra_text_id int [pk, increment, not null, note: '부가 텍스트 ID']
+  field_type varchar(31) [unique, not null, note: '항목 유형']
+  content text [unique, not null, note: '텍스트 내용']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`, note: '생성일시']
+
+  Note: '의약품 부가 정보 텍스트 원본 — 22,964건'
+}
+
+Table pharmport_medicine_extra [headercolor: #2ecc71] {
+  extra_id int [pk, increment, not null, note: '매핑 ID']
+  medicine_id int [not null, note: '의약품 ID']
+  extra_text_id int [not null, note: '부가 텍스트 ID']
+  sort_order int [default: 0, note: '정렬 순서']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`, note: '생성일시']
+
+  Note: '의약품↔부가정보 N:M 매핑 — 175,046건'
+}
+
+Table pharmport_usage_text [headercolor: #e67e22] {
+  usage_text_id int [pk, increment, not null, note: '용법 텍스트 ID']
+  content text [unique, not null, note: '용법용량 내용']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`, note: '생성일시']
+
+  Note: '용법용량 텍스트 원본 — 9,772건'
+}
+
+Table pharmport_medicine_usage [headercolor: #e67e22] {
+  usage_id int [pk, increment, not null, note: '매핑 ID']
+  medicine_id int [not null, note: '의약품 ID']
+  usage_text_id int [not null, note: '용법 텍스트 ID']
+  sort_order int [default: 0, note: '정렬 순서']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`, note: '생성일시']
+
+  Note: '의약품↔용법 N:M 매핑 — 72,693건'
+}
+
+Table "pharmport_비교" [headercolor: #9b59b6] {
+  id int [pk, increment, not null, note: '비교 ID']
+  "팜포트_의약품명" text [not null, note: '의약품명']
+  "팜포트_성분" text [not null, note: '성분 정보']
+  "팜포트_성분_embedding" vector [note: '성분 임베딩']
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`, note: '생성일시']
+
+  Note: '의약품 비교 데이터 — 66,290건. medicine_name 텍스트 매칭(N:M, 69,939건)'
+}
+
+// ============================================================
+// 터울 외부 테이블 (논리적 관계, FK 미설정)
+// ============================================================
+
+Table ProductInfos [headercolor: #e74c3c] {
+  ProductCode varchar(450) [unique, not null, note: '제품 코드']
+  EdiCode varchar(450) [note: 'EDI 코드']
+  ItemStandardCode varchar(450) [note: '품목기준코드']
+  ManufacturerId int [not null, note: '제조사 ID']
+  AtcCode varchar(450) [note: 'ATC 분류코드']
+  Name varchar(450) [note: '제품명']
+  BrandId int [note: '브랜드 ID']
+  MasterIngredientCode text [note: '주성분코드 → 터울주성분.심평원성분코드']
+  IngredientCode text [note: '성분코드']
+  DosageForm text [note: '제형 코드']
+  DosageFormName text [note: '제형명']
+  Unit text [note: '단위']
+  Standard text [note: '규격']
+  Type text [note: '유형']
+  CoverType text [note: '급여 유형']
+  Name_embedding vector [note: '제품명 임베딩']
+  CreationDateTime timestamp [not null, note: '생성일시']
+  ModificationDate timestamp [not null, note: '수정일시']
+  ModifiedBy text [note: '수정자']
+
+  Note: '제품 정보 — 48,027건 (실제 50개 컬럼, 주요 컬럼만 표시)'
+}
+
+Table Manufacturers [headercolor: #e74c3c] {
+  ManufacturerID int [pk, not null, note: '제조사 고유 ID']
+  Name varchar(450) [note: '제조사명']
+  ModificationDate timestamp [not null, note: '수정일시']
+  CreationDate timestamp [not null, note: '생성일시']
+  Url text [note: '제조사 웹사이트 URL']
+  Name_embedding vector [note: '제조사명 임베딩']
+
+  Note: '제조사 마스터 — 659건'
+}
+
+Table "터울주성분" [headercolor: #f39c12] {
+  "심평원성분코드" varchar(450) [pk, not null, note: '심평원 성분 코드']
+  "약품분류ID" int [note: '약품 분류 ID']
+  "약효설명ID" int [note: '약효 설명 ID']
+  "성분명" text [note: '성분명 (영문)']
+  "sorted_성분명" text [note: '알파벳순 정렬된 성분명 (19,972건)']
+  "성분명한글" text [note: '성분명 (한글)']
+  "고갈영양소영문" text [note: '고갈 영양소 (영문)']
+  "성분명_임베딩" vector [note: '성분명 임베딩']
+  "sorted_성분명_embedding" vector [note: 'vector(3072) 정렬 성분명 임베딩 (19,972건)']
+  IsDeleted boolean [not null, note: '삭제 여부']
+  "등록일" timestamp [not null, note: '등록일']
+  "수정일" timestamp [not null, note: '수정일']
+  ModifiedBy text [note: '수정자']
+
+  Note: '심평원 기준 주성분 마스터 — 20,235건'
+}
+
+// ============================================================
+// FK 관계 (확인된 제약조건)
+// ============================================================
+
+Ref: pharmport_medicine_extra.medicine_id > pharmport_medicine.medicine_id
+Ref: pharmport_medicine_extra.extra_text_id > pharmport_extra_text.extra_text_id
+Ref: pharmport_medicine_usage.medicine_id > pharmport_medicine.medicine_id
+Ref: pharmport_medicine_usage.usage_text_id > pharmport_usage_text.usage_text_id
+
+// ============================================================
+// 논리적 관계 (FK 미설정, DB 조인 검증 완료)
+// ============================================================
+
+// pharmport_medicine.product_code → ProductInfos.ProductCode (29,882건 매칭)
+Ref logical_product_code: pharmport_medicine.product_code - ProductInfos.ProductCode
+
+// pharmport_medicine.ingredient_code → 터울주성분.심평원성분코드 (29,882건 매칭)
+Ref logical_ingredient_code: pharmport_medicine.ingredient_code - "터울주성분"."심평원성분코드"
+
+// ProductInfos.ManufacturerId → Manufacturers.ManufacturerID (47,988건)
+Ref: ProductInfos.ManufacturerId > Manufacturers.ManufacturerID
+
+// ProductInfos.MasterIngredientCode → 터울주성분.심평원성분코드 (11,349건)
+Ref logical_master_ingredient: ProductInfos.MasterIngredientCode - "터울주성분"."심평원성분코드"

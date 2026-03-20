@@ -93,3 +93,11 @@ def get_vector_connection():
 def get_dev_connection():
     """개발 DB(teoul_201201) 커넥션을 반환한다."""
     return get_connection(os.getenv("DEV_DATABASE_NAME", "teoul_201201"))
+
+
+def get_v2_connection():
+    """신규 DB(teoul_pharminfo_v2) 커넥션을 반환한다.
+
+    LLM 생성 결과 및 프로파일 데이터 저장용.
+    """
+    return get_connection(os.getenv("V2_DATABASE_NAME", "teoul_pharminfo_v2"))

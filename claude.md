@@ -136,14 +136,82 @@ erDiagram
 | `pharmport_medicine_usage` | `medicine_id` | → | `pharmport_medicine` | `medicine_id` |
 | `pharmport_medicine_usage` | `usage_text_id` | → | `pharmport_usage_text` | `usage_text_id` |
 
-### 논리적 관계 (FK 미설정, 컬럼명 기반 추정)
+### 논리적 관계 (FK 미설정, DB 실제 조인 검증 완료)
 
-| 테이블 | 컬럼 | 관련 가능 테이블 | 설명 |
-|---|---|---|---|
-| `pharmport_비교` | `팜포트_의약품명` | `pharmport_medicine.medicine_name` | 의약품명 텍스트 매칭 |
-| `ProductInfos` | `ProductCode` | `pharmport_medicine.product_code` | 약품코드 기반 매칭 |
-| `ProductInfos` | `ManufacturerId` | `Manufacturers.ManufacturerID` | 제조사 ID 매칭 |
-| `터울주성분` | `심평원성분코드` | `pharmport_medicine.ingredient_code` | 성분코드 기반 매칭 |
+| 테이블 | 컬럼 | 관련 테이블 | 조인 건수 | 설명 |
+|---|---|---|---|---|
+| `pharmport_medicine` | `product_code` | `ProductInfos.ProductCode` | 29,882건 | 약품코드 기반 매칭 |
+| `pharmport_medicine` | `ingredient_code` | `터울주성분.심평원성분코드` | 29,882건 | 성분코드 기반 매칭 |
+| `pharmport_medicine` | `medicine_name` | `pharmport_비교.팜포트_의약품명` | 69,939건 (N:M) | 의약품명 텍스트 매칭 |
+| `ProductInfos` | `ManufacturerId` | `Manufacturers.ManufacturerID` | 47,988건 | 제조사 ID 매칭 |
+| `ProductInfos` | `MasterIngredientCode` | `터울주성분.심평원성분코드` | 11,349건 | 주성분코드 매칭 |
+| `터울주성분` | `약품분류ID` | `터울약품분류.약품분류ID` | 12,631건 | 약품 카테고리 분류 |
+| `터울주성분` | `약효설명ID` | `터울약효설명.약효설명ID` | 11,084건 | 약효 설명 텍스트 |
+
+---
+
+## 팜포트 중심 관계 다이어그램
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        팜포트 내부 (FK 설정됨)                           │
+│                                                                         │
+│   pharmport_extra_text (22,964)                                         │
+│          │ extra_text_id                                                 │
+│          ▼                                                              │
+│   pharmport_medicine_extra (175,046) ◄── medicine_id ──┐                │
+│                                                         │                │
+│   pharmport_usage_text (9,772)                          │                │
+│          │ usage_text_id                    pharmport_medicine (40,837)  │
+│          ▼                                   [핵심 허브 테이블]          │
+│   pharmport_medicine_usage (72,693) ◄── medicine_id ──┘                 │
+│                                                                         │
+│   pharmport_비교 (66,290) ◄── medicine_name ──┘  (텍스트 매칭, N:M)     │
+└─────────────────────────────────────────────────────────────────────────┘
+                    │                           │
+                    │ product_code              │ ingredient_code
+                    │ (29,882건)                │ (29,882건)
+                    ▼                           ▼
+┌──────────────────────────┐    ┌─────────────────────────────────────────┐
+│  ProductInfos (48,027)   │    │         터울주성분 (20,235)              │
+│                          │    │         [심평원성분코드 PK]              │
+│  ManufacturerId ──┐      │    │              │            │             │
+│  MasterIngredient │      │    │         약품분류ID    약효설명ID         │
+│  Code ────────────┼──────┼───►│        (12,631건)   (11,084건)          │
+└──────────────────┼───────┘    └──────────┼────────────┼─────────────────┘
+                   │                       │            │
+                   ▼                       ▼            ▼
+          Manufacturers (659)    터울약품분류 (612)  터울약효설명 (2,670)
+                                                        │
+                              ┌──────────────────────────┼──────────────┐
+                              │                          │              │
+                              ▼                          ▼              ▼
+                    터울주성분A4복약      터울주성분A5복약     터울주성분
+                    안내매핑 (44,601)     안내매핑 (9,602)    픽토그램매핑 (17,130)
+```
+
+### 터울주성분 중심 관계 다이어그램
+
+```
+                          pharmport_medicine (40,837)
+                          ingredient_code (29,882건 매칭)
+                                    │
+                                    ▼
+터울약품분류 (612) ◄── 약품분류ID ── 터울주성분 (20,235) ── 약효설명ID ──► 터울약효설명 (2,670)
+  가래 제거제 등           (12,631건)  심평원성분코드 PK   (11,084건)      약효 설명 한/영
+                                    │
+                    ┌───────────────┼───────────────┐
+          MasterIngredientCode      │               │
+             (11,349건)             │               │
+                    │               │               │
+          ProductInfos (48,027)     │               │
+                                    │               │
+                    ┌───────────────┼───────┬───────┼───────┐
+                    ▼               ▼       ▼       ▼       ▼
+              터울주성분      터울주성분   터울주성분  터울주성분
+              A4복약안내매핑   A5복약안내매핑 픽토그램매핑 _임베딩대상
+              (44,601)       (9,602)     (17,130)   (19,972)
+```
 
 ---
 

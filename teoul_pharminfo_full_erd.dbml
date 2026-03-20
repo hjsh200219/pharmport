@@ -1,0 +1,2084 @@
+// ==========================================================
+// teoul_pharminfo 전체 ERD
+// Azure Database for PostgreSQL (Flexible Server)
+// 서버: teoul-testpg.postgres.database.azure.com
+// 테이블 수: 133개
+// ==========================================================
+
+Project teoul_pharminfo {
+  database_type: 'PostgreSQL'
+  Note: 'Azure PostgreSQL - teoul_pharminfo'
+}
+
+// ============================================================
+// 팜포트 (PharmPort) (7개)
+// ============================================================
+
+Table PharmPort_DrugInfo {
+  "일련번호" int [pk]
+  "약품명" varchar(500)
+  "제조사" varchar(500)
+  "효능효과" text
+  "복용법" text
+  "주의사항" text
+  "약색상" varchar(200)
+  "보관방법" text
+  "성분명영문" text
+  "복약지도" text
+  url varchar(2000)
+  img_url varchar(2000)
+  CreationDateTime timestamp [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: '41,851건'
+}
+
+Table pharmport_extra_text {
+  extra_text_id int [pk, increment]
+  field_type varchar(31) [not null]
+  content text [not null]
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  washed_content text
+
+  Note: '22,964건'
+}
+
+Table pharmport_medicine {
+  medicine_id int [pk, increment]
+  medicine_name varchar(200) [not null]
+  manufacturer varchar(200)
+  color varchar(100)
+  storage text
+  ingredients text
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  product_code varchar(100)
+  ingredient_code varchar(100)
+  ingredient_embedding vector
+  embedding vector
+  medicine_name_embedding vector
+  manufacturer_embedding vector
+  sorted_ingredients text
+  sorted_ingredient_embedding vector
+  match_method varchar(50)
+  direct_ingredient_code varchar(100)
+
+  Note: '40,837건'
+}
+
+Table pharmport_medicine_extra {
+  extra_id int [pk, increment]
+  medicine_id int [not null]
+  extra_text_id int [not null]
+  sort_order int
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  Note: '175,046건'
+}
+
+Table pharmport_medicine_usage {
+  usage_id int [pk, increment]
+  medicine_id int [not null]
+  usage_text_id int [not null]
+  sort_order int
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  Note: '72,693건'
+}
+
+Table pharmport_usage_text {
+  usage_text_id int [pk, increment]
+  content text [not null]
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  washed_content text
+
+  Note: '9,772건'
+}
+
+Table "pharmport_비교" {
+  id int [pk, increment]
+  "팜포트_의약품명" text [not null]
+  "팜포트_성분" text [not null]
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  "팜포트_성분_embedding" vector
+
+  Note: '66,290건'
+}
+
+// ============================================================
+// 터울 (Teoul) (12개)
+// ============================================================
+
+Table "터울복약안내A4" {
+  "복약안내A4ID" int [pk]
+  "터울버전" text
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+  "분류" int
+  EnglishText text
+  "픽토그램Code" text
+
+  Note: '8,315건'
+}
+
+Table "터울복약안내A5" {
+  "복약안내A5ID" int [pk]
+  "터울버전" text
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+  "분류" int
+  EnglishText text
+
+  Note: '1,859건'
+}
+
+Table "터울식별정보" {
+  ProductCode varchar(450) [pk]
+  "약품장축길이" text
+  "약품단축길이" text
+  "표시앞" text
+  "표시뒤" text
+  "색상앞" text
+  "색상뒤" text
+  IsUpdated boolean [not null]
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+  BackBase64 boolean [not null]
+  BackConfirm boolean [not null]
+  BackCrop boolean [not null]
+  BackRemoveBg boolean [not null]
+  BackResize boolean [not null]
+  Base64 boolean [not null]
+  Confirm boolean [not null]
+  Crop boolean [not null]
+  RemoveBg boolean [not null]
+  Resize boolean [not null]
+  "식별표시코드뒤" text
+  "식별표시코드앞" text
+
+  Note: '44,259건'
+}
+
+Table "터울약품분류" {
+  "약품분류ID" int [pk]
+  "약품분류" text
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+  EnglishText text
+
+  Note: '612건'
+}
+
+Table "터울약효설명" {
+  "약효설명ID" int [pk]
+  "터울버전" text
+  EnglishText text
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+
+  Note: '2,670건'
+}
+
+Table "터울약효설명work" {
+  "약효설명ID" int [pk]
+  "터울버전" text
+  EnglishText text
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+
+  Note: '411건'
+}
+
+Table "터울주성분" {
+  "심평원성분코드" varchar(450) [pk]
+  "약품분류ID" int
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+  "약효설명ID" int
+  "성분명" text
+  "고갈영양소영문" text
+  "성분명한글" text
+  "성분명_임베딩" vector
+  "sorted_성분명" text
+  "sorted_성분명_embedding" vector
+
+  Note: '18,596건'
+}
+
+Table "터울주성분A4복약안내매핑" {
+  "심평원성분코드" varchar(450) [pk]
+  "복약안내A4ID" int [pk]
+  "등록일" timestamptz [not null]
+
+  Note: '44,601건'
+}
+
+Table "터울주성분A5복약안내매핑" {
+  "심평원성분코드" varchar(450) [pk]
+  "복약안내A5ID" int [pk]
+  "등록일" timestamptz [not null]
+
+  Note: '9,602건'
+}
+
+Table "터울주성분픽토그램매핑" {
+  "심평원성분코드" varchar(450) [pk]
+  "픽토그램Code" varchar(450) [pk]
+
+  Note: '17,130건'
+}
+
+Table "터울픽토그램" {
+  Code varchar(450) [pk]
+  ContentsUrl text
+  Title text [not null]
+  "중요도" int [not null]
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+  EnglishText text
+
+  Note: '104건'
+}
+
+Table "텍스트그램" {
+  ImageUrl varchar(450) [pk]
+  Title text [not null]
+  CreationDateTime timestamp [not null]
+  ModificationDateTime timestamp
+  "중요도" int [not null]
+  IsDeleted boolean [not null]
+
+  Note: '111건'
+}
+
+// ============================================================
+// BRAIN 약품정보 (3개)
+// ============================================================
+
+Table BRAIN_DRUG_INFO {
+  DRUG_CODE varchar(9) [pk]
+  DRUG_NAME varchar(100)
+  DRUG_INGREDIENT_CODE varchar(9)
+  DRUG_DELEGATE_INGREDIENT_NAME varchar(50)
+  DRUG_UNIT varchar(20)
+  DRUG_MAKER_SEQ numeric
+  DRUG_MAKER_NAME varchar(80)
+  DRUG_SHAPE_DESC varchar(128)
+  DRUG_KEEP_MANNER varchar(128)
+  DRUG_IMAGE_PATH varchar(100)
+  USE_KIMS_INFO varchar(1)
+  UPDATE_TIME timestamp
+  CREATE_TIME timestamp
+  IMG_ATTR text
+  SPECIAL_GUIDE text
+
+  Note: '76,427건'
+}
+
+Table BRAIN_DRUG_INGREDIENT_INFO {
+  DRUG_INGREDIENT_CODE varchar(9) [pk]
+  INGREDIENT_NAME varchar(255)
+  EFFECT_GROUP varchar(100)
+  EFFECT varchar(255)
+  SIDE_EFFECT_ENVELOPE varchar(255)
+  SIDE_EFFECT_A4 varchar(255)
+  SPECIFIC_DRUG_TAKING_DESC varchar(255)
+  DRUG_KEEP_MANNER varchar(100)
+  MAIN_DISEASE_CODE varchar(10)
+  SUB_DISEASE_CODE varchar(10)
+  SPECIAL_CONTENT_SEQ int
+  CREATE_TIME timestamp
+  UPDATE_TIME timestamp
+  SPECIAL_GUIDE text
+  TEOUL_MANAGED boolean
+
+  Note: '6,452건'
+}
+
+Table BRAIN_KIMS_DRUG_INFO {
+  DRUG_CODE text
+  KIMS_DRUG_CODE varchar(15)
+  KIMS_DRUG_NAME varchar(128)
+  KIMS_DRUG_KEEP_MANNER varchar(1024)
+  KIMS_DRUG_SHAPE_DESC varchar(1024)
+  KIMS_IMG_URL varchar(100)
+  KIMS_IMG_ATTR varchar(128)
+  KIMS_INGREDIENT_NAMES varchar(1024)
+  KIMS_ENG_INGREDIENT_NAMES varchar(1024)
+  ATC_CODE varchar(128)
+  LAST_UPDATE_DATE date
+  CREATE_TIME timestamp
+  UPDATE_TIME timestamp
+  SEQ int [pk]
+
+  Note: '82,267건'
+}
+
+// ============================================================
+// 제품/제조사/브랜드/벤더 (13개)
+// ============================================================
+
+Table BrandMappings {
+  BrandId int [unique, not null]
+  EdiCode varchar(450) [unique, not null]
+
+  Note: '46,201건'
+}
+
+Table BrandProductCodeMappings {
+  BrandId int [pk]
+  ProductCode varchar(450) [pk]
+
+  Note: '46,193건'
+}
+
+Table Brands {
+  BrandId int [pk]
+  Name varchar(450)
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '29,462건'
+}
+
+Table ManufacturerIdEdiMappings {
+  ManufacturerID int [unique, not null]
+  EdiCode varchar(450) [unique, not null]
+
+  Note: '46,200건'
+}
+
+Table Manufacturers {
+  ManufacturerID int [pk]
+  Name varchar(450)
+  ModificationDate timestamp [not null]
+  CreationDate timestamp [not null]
+  Url text
+  Name_embedding vector
+
+  Note: '659건'
+}
+
+Table ProductCodeDikMappings {
+  ProductCode varchar(450) [pk]
+  DikCode varchar(450) [pk]
+  CreationDateTime timestamp [not null]
+  ModifiedBy text
+  DataSource int
+
+  Note: '8,596건'
+}
+
+Table ProductCodeEdiMappings {
+  ProductCode varchar(450) [unique, not null]
+  EdiCode varchar(450) [unique, not null]
+  CreationDateTime timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  DataSource int
+  ModifiedBy text
+
+  Note: '48,305건'
+}
+
+Table ProductCodeStandardCodeMapping {
+  ProductCode varchar(450) [unique, not null]
+  StandardCode varchar(450) [unique, not null]
+
+  Note: '0건'
+}
+
+Table ProductInfos {
+  ProductCode varchar(450) [unique, not null]
+  EdiCode varchar(450)
+  ItemStandardCode varchar(450)
+  ManufacturerId int [not null]
+  AtcCode varchar(450)
+  Name varchar(450)
+  BrandId int
+  MasterIngredientCode text
+  MfdsCode text
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+  Unit text
+  DosageForm text
+  DosageFormName text
+  DosageType text
+  IngredientCode text
+  IngredientCodeWithoutStrength text
+  Standard text
+  Type text
+  CoverType text
+  DataSource int
+  ModifiedBy text
+  NameEdited text
+  work text
+  BackBase64 boolean [not null]
+  BackConfirm boolean [not null]
+  BackCrop boolean [not null]
+  BackRemoveBg boolean [not null]
+  BackResize boolean [not null]
+  Base64 boolean [not null]
+  Confirm boolean [not null]
+  Crop boolean [not null]
+  IsUpdated boolean [not null]
+  RemoveBg boolean [not null]
+  Resize boolean [not null]
+  "색상뒤" text
+  "색상앞" text
+  "식별표시코드뒤" text
+  "식별표시코드앞" text
+  "약품단축길이" text
+  "약품장축길이" text
+  "표시뒤" text
+  "표시앞" text
+  NameEng text
+  UnitEn text
+  DepletedNutrients text
+  ImageModificationDate timestamp
+  MfdsImageDate timestamp
+  RemoveBgConfirm boolean [not null]
+  Name_embedding vector
+
+  Note: '50,917건'
+}
+
+Table ProductMedicationMappings {
+  ProductCode varchar(450) [pk]
+  MedicationId int [pk]
+  "등록일" timestamp [not null]
+
+  Note: '1,891건'
+}
+
+Table Vendor {
+  VendorId int [pk]
+  Name varchar(450)
+  ModificationDate timestamp [not null]
+  CreationDate timestamp [not null]
+
+  Note: '752건'
+}
+
+Table VendorEdiMapping {
+  VendorId int [unique, not null]
+  EdiCode varchar(450) [unique, not null]
+
+  Note: '73,593건'
+}
+
+Table VendorProductMapping {
+  VendorId int [pk]
+  ProductCode varchar(450) [pk]
+
+  Note: '33,781건'
+}
+
+// ============================================================
+// 성분 (Ingredients) (5개)
+// ============================================================
+
+Table ComplexIngredientMasterMappings {
+  ComplexIngredientCode varchar(450) [pk]
+  MasterIngredientCode varchar(450) [pk]
+
+  Note: '19,228건'
+}
+
+Table ComplexIngredients {
+  ComplexIngredientCode varchar(450) [pk]
+  NormalizedIngredientName text
+  DisplayName text
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '8,178건'
+}
+
+Table IngredientMasterMapping {
+  IngredientCode varchar(450) [pk]
+  MasterIngredientCode varchar(450) [pk]
+
+  Note: '39,652건'
+}
+
+Table Ingredients {
+  IngredientCode varchar(450) [pk]
+  NormalizedIngredientName text
+  DisplayName text
+  IngredientType int [not null]
+  Strength numeric
+  ContentUnit text
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '26,634건'
+}
+
+Table MasterIngredients {
+  MasterIngredientCode varchar(450) [unique, not null]
+  Sequence int [unique, not null]
+  IngredientName varchar(450)
+  DosageForm text [not null]
+  DosageFormName text [not null]
+  MfdsCode int [not null]
+  DosageType text [not null]
+  DosageContent numeric [not null]
+  ContentUnit text [not null]
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+  IngredientName_embedding vector
+
+  Note: '58,577건'
+}
+
+// ============================================================
+// 약학정보원 (6개)
+// ============================================================
+
+Table "약정원_낱알식별정보" {
+  "약학정보원의약품코드" text
+  "성상" text
+  "약품명" text
+  "약품이미지" text
+  "약품장축길이" text
+  "약품단축길이" text
+  "뒤식별표시코드" text
+  "앞식별표시코드" text
+  "앞식별표시" text
+  "뒤식별표시" text
+  "앞면색" text
+  "뒷면색" text
+  "모양" text
+  "제형" text
+  "최종수정일자" timestamp [not null]
+  "EDI코드" varchar(13) [pk]
+  IsDeleted boolean [not null]
+  Checksum text
+  CROP_IMAGE text
+
+  Note: '28,542건'
+}
+
+Table "약정원_비급여" {
+  "약학정보원의약품코드" varchar(450) [pk]
+  "의약품명" text
+  "성상" text
+  "효능효과" text
+  "복용법" text
+  "주의사항" text
+  "저장방법" text
+  "약품분류" text
+  "제형" text
+  "약품구분" text
+  "단일" text
+  "약품이미지" text
+  "제조사" text
+  "포장단위" text
+  "보험구분" text
+  "성분정보" text
+  "약품설명" text
+  "복약지도" text
+  "임부등급" text
+  "심평원성분코드" text
+  "ATC코드" text
+  "연령금기" text
+  "병용금기" text
+  "임부금기" text
+  "노인주의" text
+  "용량주의" text
+  "현혈금지" text
+  "분할주의" text
+  "급여정보" text
+  "ATC코드카테고리" text
+  "약효요약" text
+  "간편복약안내" text
+  "약품이미지IDFY" text
+  "약품장축길이" text
+  "약품단축길이" text
+  "뒤식별표시코드" text
+  "앞식별표시코드" text
+  "앞식별표시" text
+  "뒤식별표시" text
+  "앞면색" text
+  "뒷면색" text
+  "모양" text
+  "FDA등급상세" text
+  "KPIC약효분류" text
+  "마약여부" text
+  "픽토그램이미지" text
+  ResizeFileName text
+  RemoveBgFileName text
+  CropFileName text
+  ConfirmFileName text
+  Base64FileName text
+  "Checksum비급여" text
+  "Checksum부가" text
+  "Checksum식별" text
+  "최종수정일자" timestamp [not null]
+  IsUpdated boolean [not null]
+  isDeleted boolean [not null]
+  "약품이미지컨펌일자" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  "고갈영양소영문" text
+  "포장이미지Package" text
+  EdiCode varchar(450)
+  "터울간편복약안내" text
+  "터울복약지도" text
+  "터울약효분류" text
+  "터울효능설명" text
+  "터울색상뒤" text
+  "터울색상앞" text
+  "터울표시뒤" text
+  "터울표시앞" text
+  modifyUser text
+  modifyUserType int [not null]
+  "등록일" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  "터울약품장축길이" text
+  "터울약품단축길이" text
+  "복용법ID" int
+
+  Note: '12,406건'
+}
+
+Table "약정원_성분명매핑" {
+  Ingredient varchar(50) [pk]
+  dikcode varchar(50) [pk]
+
+  Note: '43,540건'
+}
+
+Table "약정원_음식물상호작용약품별" {
+  EDI_CODE varchar(13) [pk]
+  "주의순번" int [pk]
+  "성분명한글" text
+  "성분명영문" text
+  "주의사항" text
+  "최종수정일자" timestamp
+
+  Note: '86,476건'
+}
+
+Table "약정원_의약품부가정보" {
+  "약학정보원의약품코드" text
+  "약품명" text
+  "FDA등급" text
+  "FDA등급상세" text
+  "ATC코드" text
+  "KPIC약효분류" text
+  "복약지도" text
+  "복약지도세부사항" text
+  "마약여부" text
+  "픽토그램이미지" text
+  "포장이미지" text
+  "최종수정일자" timestamp [not null]
+  "EDI코드" varchar(13) [pk]
+  IsDeleted boolean [not null]
+  Checksum text
+
+  Note: '57,462건'
+}
+
+Table "약정원_의약품상세정보" {
+  "약학정보원의약품코드" text
+  "의약품명" text
+  "성상" text
+  "효능효과" text
+  "복용법" text
+  "주의사항" text
+  "저장방법" text
+  "약품분류" text
+  "제형" text
+  "약품구분" text
+  "약품이미지" text
+  "제조사" text
+  "포장단위" text
+  "보험구분" text
+  "성분정보" text
+  "약품설명" text
+  "복약지도" text
+  "임부등급" text
+  "심평원성분코드" text
+  "ATC코드" text
+  "연령금기" text
+  "병용금기" text
+  "임부금기" text
+  "노인주의" text
+  "용량주의" text
+  "현혈금지" text
+  "분할주의" text
+  "급여정보" text
+  "ATC코드카테고리" text
+  "최종수정일자" timestamp [not null]
+  "EDI코드" varchar(13) [pk]
+  IsDeleted boolean [not null]
+  Checksum text
+  "약정원부가최종수정일자" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  "약정원부가최종처리일자" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  "약정원식별최종수정일자" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  "약정원식별최종처리일자" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  "약정원음식물상호최종수정일자" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  "약정원음식물상호최종처리일자" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  "간편복약안내" text
+  "약효요약" text
+
+  Note: '57,470건'
+}
+
+// ============================================================
+// 의약품 정보 (20개)
+// ============================================================
+
+Table "낱알식별정보" {
+  "표준코드" varchar(450) [pk]
+  "약국사업자등록번호" varchar(450) [pk]
+  modifyAt timestamp [not null]
+  modifyUser text
+  modifyUserType int [not null]
+  modifyUserIPAddress text
+  "약이미지" text
+  "표시앞" text
+  "표시뒤" text
+  "색상앞" text
+  "색상뒤" text
+  "등록일" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  isDeleted boolean [not null]
+  CROP_IMAGE text
+  REMOVEBG_IMAGE text
+  RESIZE_IMAGE text
+  IsUpdated boolean [not null]
+  CROP_IMAGE2 text
+  ResizeFileName text
+  RemoveBgFileName text
+  CropFileName text
+  ConfirmFileName text
+  Base64FileName text
+  "약품단축길이" text
+  "약품장축길이" text
+
+  Note: '61,457건'
+}
+
+Table "복용시주의사항분류" {
+  Title varchar(450) [pk]
+  CreationDateTime timestamp
+  ModificationDateTime timestamp
+  "중요도" int [not null]
+  Category text
+  CategoryEnum int [not null]
+
+  Note: '3,230건'
+}
+
+Table "성분마스터" {
+  "정규화영문명" varchar(450) [pk]
+  "약정원음식물상호작용최종수정일자" timestamp
+  "약정원음식물상호작용수" int
+  "성분한글명" text
+  "성분영문명" text
+  "사용여부" boolean
+  "최종수정일자" timestamp
+
+  Note: '3,003건'
+}
+
+Table "성분별주의할음식" {
+  Id int [pk]
+  "음식명" text
+  "성분명" varchar(450)
+  Rank int [not null]
+  "설명" text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "최종수정일" timestamp [not null]
+
+  Note: '117건'
+}
+
+Table "성분부족증상" {
+  "고갈영양소" varchar(450) [pk]
+  "증상" text
+  "등록일자" timestamp
+  "최종수정일자" timestamp
+  "역할" text
+  "주의사항" text
+  "증상_상세" text
+  "역할_상세" text
+  "주의사항_상세" text
+
+  Note: '21건'
+}
+
+Table "식약처코드분류" {
+  "식약처코드" varchar(450) [pk]
+  "분류명" text
+
+  Note: '132건'
+}
+
+Table "약가기준정보" {
+  "적용시작일자" varchar(200) [unique, not null]
+  "변경이전약품코드" varchar(450)
+  "변경이후약품코드" varchar(450)
+  "예외구분1" text
+  "예외구분2" text
+  "일반명코드" text
+  "투여경로명" text
+  "품목명" varchar(450)
+  "저가필수구분명" text
+  "약품코드" varchar(200) [unique, not null]
+  "약효분류번호" text
+  "제조업체명" text
+  "상한가" numeric [not null]
+  "규격명" text
+  "급여구분명" text
+  "전문일반구분명" text
+  "단위" text
+  "대체가능구분명" text
+  CreationDateTime timestamp [not null]
+  MD5 text
+  ModificationDateTime timestamp
+  "이전상한가" numeric
+  "적용시작일" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+
+  Note: '117,421건'
+}
+
+Table "약국CommentManaged" {
+  Id int [pk]
+  "약국정보사업자등록번호" varchar(450)
+  "내용" text
+  "작성자" text
+  "등록일자" timestamp [not null]
+  IsDeleted boolean [not null]
+
+  Note: '1건'
+}
+
+Table "약국정보Managed" {
+  "사업자등록번호" varchar(450) [pk]
+  modifyAt timestamp [not null]
+  modifyUser text
+  modifyUserType int [not null]
+  modifyUserIPAddress text
+  "약국명" varchar(450)
+  "주소" text
+  "사용자등록증" text
+  "약국전화번호" text
+  "등록일" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  "관리자승인여부" boolean [not null]
+  "경도" double
+  "위도" double
+  "주소상세" text
+  "도장이미지" text
+  "약국로고" text
+  "법정동코드" text
+  SalesManagerId int
+  "영업채널Code" int
+  ErpCode int
+  "약국광고표기" int
+  PharmChain text
+  Account int
+
+  Note: '4,242건'
+}
+
+Table "약물상호작용" {
+  Ingredient1 varchar(200) [pk]
+  Ingredient2 varchar(200) [pk]
+  Category text
+  "임상효과" text
+  "기전" text
+  "처치" text
+
+  Note: '36,970건'
+}
+
+Table "약제급여목록" {
+  "연번" int [pk]
+  "투여" text
+  "분류" text
+  "주성분코드" text
+  "제품코드" text
+  "제품명" text
+  "업체명" text
+  "규격" text
+  "단위" text
+  "전일" text
+  "ATC코드" text
+  "ATC코드명칭" text
+  "비고" text
+
+  Note: '20,770건'
+}
+
+Table "약품" {
+  "표준코드" varchar(450) [pk]
+  modifyAt timestamp [not null]
+  modifyUser text
+  modifyUserType int [not null]
+  modifyUserIPAddress text
+  "주성분코드" text
+  "터울제약사코드" int [not null]
+  "ATC코드" text
+  "등록일" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  isDeleted boolean [not null]
+  "약정원상세최종수정일자" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  "약정원상세최종처리일자" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  Checksum text
+  Type int [not null]
+
+  Note: '57,469건'
+}
+
+Table "약품부가정보" {
+  "표준코드" varchar(450) [pk]
+  "약국사업자등록번호" varchar(450) [pk]
+  modifyAt timestamp [not null]
+  modifyUser text
+  modifyUserType int [not null]
+  modifyUserIPAddress text
+  "효능설명" text
+  "복약지도" text
+  "등록일" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  isDeleted boolean [not null]
+  "약효분류" text
+  "ATC코드" text
+  "고갈영양소영문" text
+  "간편복약안내" text
+  "복용법ID" int
+  "출력제외" boolean [not null]
+
+  Note: '49,747건'
+}
+
+Table "약품부가정보_터울픽토그램" {
+  "표준코드" varchar(450) [pk]
+  "약국사업자등록번호" varchar(450) [pk]
+  "픽토그램Code" varchar(450) [pk]
+  "등록일" timestamp [not null]
+  modifyAt timestamp [not null]
+  modifyUser text
+  modifyUserType int [not null]
+  modifyUserIPAddress text
+
+  Note: '23건'
+}
+
+Table "약효요약" {
+  Origin varchar(450) [pk]
+  Edit text
+  ModifyAt timestamp
+
+  Note: '688건'
+}
+
+Table "의약품급여테이블" {
+  Edicode varchar(20) [pk]
+  YYYYMM varchar(8) [pk]
+  Price numeric [not null]
+  CreationDateTime timestamp [not null]
+
+  Note: '1,324,767건'
+}
+
+Table "의약품표준코드" {
+  "한글상품명" text
+  "업체명" text
+  "약품규격" text
+  "제품총수량" text
+  "제형구분" text
+  "포장형태" text
+  "품목기준코드" text
+  "품목허가일자" text
+  "전문일반구분" text
+  "대표코드" varchar(20)
+  "표준코드" varchar(20) [pk]
+  "제품코드_개정후" text
+  "일반명코드_성분명코드" text
+  "비고" text
+  "취소일자" text
+  "양도양수적용_공고_일자" text
+  "양도양수종료일자" text
+  "일련번호생략여부" text
+  "일련번호생략사유" text
+  "ATC코드" text
+  "특수관리약품구분" text
+  "의약품판독장비구분" text
+
+  Note: '201,019건'
+}
+
+Table "의약품회수판매중지" {
+  "품목기준코드" varchar(450) [pk]
+  "품목명" text
+  "업소명" text
+  "회수사유내용" text
+  "구분" text
+  "승인일자" text
+  "회수명령일자" varchar(450) [pk]
+  MD5 text
+  CreationDateTime timestamp [not null]
+  ModificationDateTime timestamp [not null]
+
+  Note: '1,330건'
+}
+
+Table "의약품회수판매중지상세" {
+  "업소명" text
+  "공장주소" text
+  "업소담당자전화번호" text
+  "품목명" varchar(450)
+  "회수사유내용" text
+  "제조번호" text
+  "제조일자" text
+  "유효기간" text
+  "포장단위" text
+  "승인일자" text
+  "비고" text
+  "회수명령일자" text
+  "공개마감일자" text
+  MD5 varchar(450) [pk]
+  CreationDateTime timestamp [not null]
+  ModificationDateTime timestamp [not null]
+
+  Note: '2,707건'
+}
+
+Table "품목기준코드성분명매핑" {
+  ItemStandardCode varchar(450) [pk]
+  NormalizedIngredient varchar(450) [pk]
+
+  Note: '78,247건'
+}
+
+// ============================================================
+// 병원/약국 (9개)
+// ============================================================
+
+Table HosInfos {
+  YKNO varchar(450) [pk]
+  Name text
+  Address text
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '11건'
+}
+
+Table HospitalAddressInfo {
+  ykiho varchar(450) [pk]
+  yadmNm varchar(450)
+  clCd int [not null]
+  clCdNm text
+  sidoCd int [not null]
+  sgguCd int [not null]
+  sgguCdNm text
+  emdongNm text
+  postNo int [not null]
+  addr varchar(450)
+  telno text
+  hospUrl text
+  estbDd text
+  drTotCnt int [not null]
+  mdeptGdrCnt int [not null]
+  mdeptSdrCnt int [not null]
+  mdeptIntnCnt int [not null]
+  mdeptResdntCnt int [not null]
+  detyGdrCnt int [not null]
+  detySdrCnt int [not null]
+  detyIntnCnt int [not null]
+  detyResdntCnt int [not null]
+  cmdcGdrCnt int [not null]
+  cmdcSdrCnt int [not null]
+  cmdcIntnCnt int [not null]
+  cmdcResdntCnt int [not null]
+  pnursCnt int [not null]
+  XPos double [not null]
+  YPos double [not null]
+  distance double [not null]
+  "등록일" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  "수정일" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  sidoCdNm text
+
+  Note: '76,940건'
+}
+
+Table HospitalAddressInfos {
+  Id int [pk]
+  Name varchar(450)
+  HospitalKind text
+  Phone text
+  Address text
+  Bcode text
+  Address2 text
+  HospitalKindCode text
+  Latitude double
+  Longitude double
+
+  Note: '76,088건'
+}
+
+Table HospitalInfos {
+  RoomCnt int
+  RoomCntType int
+  Name varchar(20)
+  MedicalInstitutionNo varchar(450) [pk, default: `''::character varying`]
+  HospitalKind text
+  BizNo text
+
+  Note: '0건'
+}
+
+Table PharmHospitalNameMappings {
+  PharmBizNo varchar(450) [pk]
+  HospitalName varchar(450) [pk]
+  YKNO text
+  CreatedBy text
+  CreationDateTime timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+
+  Note: '10건'
+}
+
+Table PharmMappedHospitals {
+  PharmBizNo varchar(450) [pk]
+  HospitalName varchar(450) [pk]
+  RoomCntType int [not null]
+  HospitalKind text
+  EncryptedYkiho text
+
+  Note: '9,948건'
+}
+
+Table PharmProductMappings {
+  BizNo varchar(450) [pk]
+  PharmCode varchar(450) [pk]
+  ProductCode text
+  "등록일" timestamp [not null]
+
+  Note: '6,972건'
+}
+
+Table YkHosBizNoMappings {
+  HosBizNo varchar(450) [pk]
+  YKNO varchar(450) [pk]
+
+  Note: '10건'
+}
+
+Table YkInstitutionInfos {
+  Ykiho varchar(10) [pk]
+  InstNm text [not null]
+  ClCd varchar(10)
+  FacilityTp varchar(20)
+  Address text
+  SidoCd varchar(10)
+  SgguCd varchar(10)
+  PostNo varchar(10)
+  TelNo text
+  Lat numeric
+  Lng numeric
+  CreationDateTime timestamp [not null]
+  ModificationDateTime timestamp [not null]
+
+  Note: '104,621건'
+}
+
+// ============================================================
+// 코드 매핑 (16개)
+// ============================================================
+
+Table "ATC코드분류" {
+  "ATC코드" varchar(450) [pk]
+  "코드명" text
+  "코드영문명" text
+
+  Note: '6,875건'
+}
+
+Table CommonCode {
+  Code int [pk]
+  ParentCode int
+  OrderSeq int
+  CodeType varchar(50) [not null]
+  CodeName varchar(50) [not null]
+  CodeValue varchar(50)
+
+  Note: '141건'
+}
+
+Table "EDI비급여매핑" {
+  "약학정보원의약품코드" text
+  EdiCode varchar(450) [pk]
+  "등록일" timestamp
+  BizNo varchar(450) [pk]
+
+  Note: '3,200건'
+}
+
+Table IcodeInfos {
+  icode varchar(50) [pk]
+  name_kor varchar(500) [not null]
+  name_eng varchar(500)
+  Nutrient varchar(450)
+
+  Note: '15,628건'
+}
+
+Table IcodeStdCodeMapping_old {
+  ItemStandardCode int [not null]
+  icode varchar(50) [not null]
+  type varchar(50) [not null]
+
+  Note: '441,903건'
+}
+
+Table IcodeStdCodeMappings {
+  ItemStandardCode varchar(450) [pk]
+  icode varchar(450) [pk]
+  type varchar(450) [pk, default: `''::character varying`]
+
+  Note: '441,903건'
+}
+
+Table KPIS_BarcodeData {
+  StdCode varchar(20) [pk]
+  ItemName varchar(450)
+  EntpName varchar(100)
+  ItemSpec varchar(100)
+  FormType varchar(50)
+  PackType varchar(50)
+  ItemSeq varchar(50)
+  ItemPermitDate timestamptz
+  EtcOtcCode varchar(50)
+  RepCode varchar(20)
+  EdiCode varchar(20)
+  IngrCode varchar(20)
+  AtcCode varchar(20)
+  CancelDate timestamptz
+  CreationDateTime timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  Note: '306,324건'
+}
+
+Table PatentInfoStandardCodeMappings {
+  ItemStandardCode varchar(450) [pk]
+  StandardCode varchar(450) [pk]
+
+  Note: '5,398건'
+}
+
+Table StandardCodeAuthDateMappings {
+  StandardCode varchar(450) [pk]
+  AuthDate varchar(450) [pk]
+
+  Note: '74,771건'
+}
+
+Table "공공_표준코드DIKCODE_Mapping" {
+  "표준코드" varchar(50) [pk]
+  DIKCODE varchar(50) [pk]
+
+  Note: '13,072건'
+}
+
+Table "법정동코드" {
+  "코드" varchar(450) [pk]
+  "법정동명" text
+  "시도명" text
+  "시군구명" text
+  "읍면동명" text
+
+  Note: '278건'
+}
+
+Table "브랜드매핑" {
+  EDICODE varchar(13) [pk]
+  "의약품명" text
+  "브랜드" text
+
+  Note: '16,372건'
+}
+
+Table "상병코드OriginName" {
+  CODE varchar(50) [pk]
+  EDICODE varchar(50) [pk]
+  K_NAME varchar(250) [not null]
+  E_NAME varchar(250) [not null]
+
+  Note: '1,639,405건'
+}
+
+Table "진료과분류코드" {
+  "상병코드" varchar(450) [pk]
+  "진료과" text
+  "상위질병명" text
+  "하위질병명" text
+  coverage real [not null]
+  depth int [not null]
+  CreationDateTime timestamp [not null]
+
+  Note: '470건'
+}
+
+Table "질병분류코드" {
+  "분류코드" varchar(450) [pk]
+  "한글명" text
+  "영문명" text
+  CreationDateTime timestamp [not null]
+  depth int [not null]
+
+  Note: '2,379건'
+}
+
+Table "표준코드품목기준코드매핑" {
+  StandardCode varchar(450) [pk]
+  ItemStandardCode varchar(450) [pk]
+
+  Note: '289,969건'
+}
+
+// ============================================================
+// 삭제 예정 (del_) (9개)
+// ============================================================
+
+Table "del_CODE_법정동코드" {
+  "코드" varchar(255) [pk]
+  "법정동명" varchar(255)
+  "시도명" varchar(255)
+  "시군구명" varchar(255)
+  "읍면동명" varchar(255)
+
+  Note: '245건'
+}
+
+Table del_FAQs {
+  "일련번호" int [pk]
+  "카테고리" int [not null]
+  "하위카테고리" int [not null]
+  "제목" varchar(500) [not null]
+  "내용" text [not null]
+  "노출여부" varchar(1)
+  "노출우선순위" int [not null]
+  "등록일자" timestamp [not null]
+  "노출만료일자" timestamp
+
+  Note: '113건'
+}
+
+Table del_Inquiry {
+  Id int [pk]
+  "제목" text
+  "본문" text
+  "약국명" text
+  "사용자유형" int [not null]
+  UserId text
+  CreationDateTime timestamp [not null]
+  ModificationDateTime timestamp
+  InquiryProcessType int [not null]
+  IsDeleted boolean [not null]
+  "분류" int [not null]
+  "노출여부" int
+
+  Note: '328건'
+}
+
+Table del_InquiryComment {
+  Id int [pk]
+  InquiryId int
+  "내용" text
+  "사용자유형" int [not null]
+  UserId text
+  "등록일자" timestamp [not null]
+  IsDeleted boolean [not null]
+
+  Note: '367건'
+}
+
+Table del_REQ_RAWs {
+  REQ_ID bigint [pk]
+  EdiCodes text
+  ParmBizNo varchar(450)
+  Age int
+  Gender text
+  CreationDateTime timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  DiseaseCodes text
+  PrescriptionNumber text
+  TemplateType int
+
+  Note: '16,883,757건'
+}
+
+Table "del_드럭머거" {
+  "정규화영문명" varchar(450) [pk, default: `''::character varying`]
+  "고갈영양소" varchar(450) [pk]
+  "최종수정일자" timestamp
+
+  Note: '1,843건'
+}
+
+Table "del_미등록EDICODE" {
+  ID int [pk]
+  BizNo varchar(450)
+  EdiCode varchar(450)
+  PillName text
+  "등록일" timestamp [not null]
+
+  Note: '0건'
+}
+
+Table "del_약품상병매칭" {
+  EDICODE varchar(450) [pk]
+  "상병코드" text
+  YYYYMMDD varchar(10)
+
+  Note: '13,377건'
+}
+
+Table "del_일별광고매출" {
+  yyyymmdd varchar(450) [pk]
+  BizNO varchar(450) [pk]
+  CompainId int [pk]
+  SalesPrice numeric [not null]
+
+  Note: '33건'
+}
+
+// ============================================================
+// 백업 테이블 (13개)
+// ============================================================
+
+Table BrandMappings_bak {
+  BrandId int [unique, not null]
+  EdiCode varchar(450) [unique, not null]
+
+  Note: '43,395건'
+}
+
+Table BrandProductCodeMappings_bak {
+  BrandId int [pk]
+  ProductCode varchar(450) [pk]
+
+  Note: '43,414건'
+}
+
+Table Brands_bak {
+  BrandId int [pk]
+  Name varchar(450) [not null, default: `''::character varying`]
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '31,255건'
+}
+
+Table IngredientMasterMapping_bak {
+  IngredientCode varchar(450) [pk]
+  MasterIngredientCode varchar(450) [pk]
+
+  Note: '38,456건'
+}
+
+Table Ingredients_bak {
+  IngredientCode varchar(450) [pk]
+  NormalizedIngredientName text
+  DisplayName text
+  IngredientType int [not null]
+  Strength numeric
+  ContentUnit text
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '25,809건'
+}
+
+Table MasterIngredients_backup {
+  MasterIngredientCode varchar(450) [not null]
+  sequence int [not null]
+  IngredientName varchar(450)
+  DosageForm text [not null]
+  DosageFormName text [not null]
+  MfdsCode int [not null]
+  DosageType text [not null]
+  DosageContent numeric [not null]
+  ContentUnit text [not null]
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '55,854건'
+}
+
+Table ProductInfos_20260319 {
+  ProductCode varchar(450) [unique, not null]
+  EdiCode varchar(450)
+  ItemStandardCode varchar(450)
+  ManufacturerId int [not null]
+  AtcCode varchar(450)
+  Name varchar(450)
+  BrandId int
+  MasterIngredientCode text
+  MfdsCode text
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+  Unit text
+  DosageForm text
+  DosageFormName text
+  DosageType text
+  IngredientCode text
+  IngredientCodeWithoutStrength text
+  Standard text
+  Type text
+  CoverType text
+  DataSource int
+  ModifiedBy text
+  NameEdited text
+  work text
+  BackBase64 boolean [not null]
+  BackConfirm boolean [not null]
+  BackCrop boolean [not null]
+  BackRemoveBg boolean [not null]
+  BackResize boolean [not null]
+  Base64 boolean [not null]
+  Confirm boolean [not null]
+  Crop boolean [not null]
+  IsUpdated boolean [not null]
+  RemoveBg boolean [not null]
+  Resize boolean [not null]
+  "색상뒤" text
+  "색상앞" text
+  "식별표시코드뒤" text
+  "식별표시코드앞" text
+  "약품단축길이" text
+  "약품장축길이" text
+  "표시뒤" text
+  "표시앞" text
+  NameEng text
+  UnitEn text
+  DepletedNutrients text
+  ImageModificationDate timestamp
+  MfdsImageDate timestamp
+  RemoveBgConfirm boolean [not null]
+
+  Note: '49,342건'
+}
+
+Table ProductInfos_bak {
+  ProductCode varchar(450) [unique, not null]
+  EdiCode varchar(450)
+  ItemStandardCode varchar(450)
+  ManufacturerId int [not null]
+  AtcCode varchar(450)
+  Name varchar(450)
+  BrandId int
+  MasterIngredientCode text
+  MfdsCode text
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+  Unit text
+  DosageForm text
+  DosageFormName text
+  DosageType text
+  IngredientCode text
+  IngredientCodeWithoutStrength text
+  Standard text
+  Type text
+  CoverType text
+  DataSource int
+  ModifiedBy text
+  NameEdited text
+  work text
+  BackBase64 boolean [not null]
+  BackConfirm boolean [not null]
+  BackCrop boolean [not null]
+  BackRemoveBg boolean [not null]
+  BackResize boolean [not null]
+  Base64 boolean [not null]
+  Confirm boolean [not null]
+  Crop boolean [not null]
+  IsUpdated boolean [not null]
+  RemoveBg boolean [not null]
+  Resize boolean [not null]
+  "색상뒤" text
+  "색상앞" text
+  "식별표시코드뒤" text
+  "식별표시코드앞" text
+  "약품단축길이" text
+  "약품장축길이" text
+  "표시뒤" text
+  "표시앞" text
+  NameEng varchar(450)
+
+  Note: '47,547건'
+}
+
+Table ProductInfos_bak2 {
+  ProductCode varchar(450) [unique, not null]
+  EdiCode varchar(450)
+  ItemStandardCode varchar(450)
+  ManufacturerId int [not null]
+  AtcCode varchar(450)
+  Name varchar(450)
+  BrandId int
+  MasterIngredientCode text
+  MfdsCode text
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+  Unit text
+  DosageForm text
+  DosageFormName text
+  DosageType text
+  IngredientCode text
+  IngredientCodeWithoutStrength text
+  Standard text
+  Type text
+  CoverType text
+  DataSource int
+  ModifiedBy text
+  NameEdited text
+  work text
+  BackBase64 boolean [not null]
+  BackConfirm boolean [not null]
+  BackCrop boolean [not null]
+  BackRemoveBg boolean [not null]
+  BackResize boolean [not null]
+  Base64 boolean [not null]
+  Confirm boolean [not null]
+  Crop boolean [not null]
+  IsUpdated boolean [not null]
+  RemoveBg boolean [not null]
+  Resize boolean [not null]
+  "색상뒤" text
+  "색상앞" text
+  "식별표시코드뒤" text
+  "식별표시코드앞" text
+  "약품단축길이" text
+  "약품장축길이" text
+  "표시뒤" text
+  "표시앞" text
+
+  Note: '47,555건'
+}
+
+Table Vendor_bak {
+  VendorId int [unique, not null]
+  Name varchar(450)
+  ModificationDate timestamp [not null]
+  CreationDate timestamp [not null]
+
+  Note: '748건'
+}
+
+Table "낱알식별정보_bak" {
+  "표준코드" varchar(450) [pk]
+  "약국사업자등록번호" varchar(450) [pk]
+  modifyAt timestamp [not null]
+  modifyUser text
+  modifyUserType int [not null]
+  modifyUserIPAddress text
+  "약이미지" text
+  "표시앞" text
+  "표시뒤" text
+  "색상앞" text
+  "색상뒤" text
+  "등록일" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  isDeleted boolean [not null]
+  CROP_IMAGE text
+  REMOVEBG_IMAGE text
+  RESIZE_IMAGE text
+  IsUpdated boolean [not null]
+  CROP_IMAGE2 text
+  ResizeFileName text
+  RemoveBgFileName text
+  CropFileName text
+  ConfirmFileName text
+  Base64FileName text
+  "약품단축길이" text
+  "약품장축길이" text
+
+  Note: '57,998건'
+}
+
+Table "약가기준정보_bak2" {
+  "적용시작일자" varchar(200) [unique, not null]
+  "변경이전약품코드" varchar(450)
+  "변경이후약품코드" varchar(450)
+  "예외구분1" text
+  "예외구분2" text
+  "일반명코드" text
+  "투여경로명" text
+  "품목명" varchar(450)
+  "저가필수구분명" text
+  "약품코드" varchar(200) [unique, not null]
+  "약효분류번호" text
+  "제조업체명" text
+  "상한가" numeric [not null]
+  "규격명" text
+  "급여구분명" text
+  "전문일반구분명" text
+  "단위" text
+  "대체가능구분명" text
+  CreationDateTime timestamp [not null]
+  MD5 text
+  ModificationDateTime timestamp
+  "이전상한가" numeric
+  "적용시작일" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+
+  Note: '61,416건'
+}
+
+Table "터울식별정보_bak" {
+  ProductCode varchar(450) [pk]
+  "약품장축길이" text
+  "약품단축길이" text
+  "표시앞" text
+  "표시뒤" text
+  "색상앞" text
+  "색상뒤" text
+  IsUpdated boolean [not null]
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+  BackBase64 boolean [not null]
+  BackConfirm boolean [not null]
+  BackCrop boolean [not null]
+  BackRemoveBg boolean [not null]
+  BackResize boolean [not null]
+  Base64 boolean [not null]
+  Confirm boolean [not null]
+  Crop boolean [not null]
+  RemoveBg boolean [not null]
+  Resize boolean [not null]
+  "식별표시코드뒤" text
+  "식별표시코드앞" text
+
+  Note: '41,949건'
+}
+
+// ============================================================
+// 기타 (20개)
+// ============================================================
+
+Table ATCNAME {
+  ATC varchar(50) [not null]
+  EngName varchar(100) [not null]
+  KorName varchar(50) [not null]
+  KorNameF varchar(50) [not null]
+
+  Note: '94건'
+}
+
+Table ATCWHOEphMRA {
+  WHO_CODE varchar(50)
+  EPHMRA_CODE varchar(50)
+  EPHMRA_DESCRIPTION varchar(64)
+  createAt timestamp [not null]
+  updateAt timestamp [not null]
+
+  Note: '403건'
+}
+
+Table BioequivalenceTest {
+  ItemStandardCode varchar(450) [pk]
+  EdiCode varchar(450) [pk]
+  Type int [not null]
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '13,633건'
+}
+
+Table DrugDbDeployHistorys {
+  SeqID int [pk]
+  BlobPath text
+  FileName text
+  DownloadUrl text
+  FileSize bigint [not null]
+  DownloadCount int [not null]
+  Sha1Hash text
+  DeployYN text
+  DeployDate timestamp [not null]
+
+  Note: '8건'
+}
+
+Table KOrangeBook {
+  "품목기준코드" varchar(450)
+  "제품명" varchar(1000)
+  "성분명" varchar(500)
+  "공공대조약" boolean
+  "제네릭" boolean
+  "생동PK" boolean
+  "등록일" timestamp
+  "취하일" varchar(500)
+  "특허" boolean
+  "함량" varchar(500)
+
+  Note: '23,462건'
+}
+
+Table KpisData {
+  SeqNo int [pk]
+  "제품명" text
+  "제품명영문" text
+  "제조사" text
+  "식약처분류설명" text
+  "식약처분류코드" text
+  "ATC코드" text
+  "급여코드" text
+  "주성분코드" text
+  CreationDateTime timestamp [not null]
+  "급여" int [not null]
+  "보관방법" text
+  "보험상한가" numeric [not null]
+  "설명" text
+  "수입제조" text
+  "전문일반" text
+  "제품코드" text
+  "투여경로" text
+  "품목기준코드" text
+
+  Note: '72,384건'
+}
+
+Table KpisDatas {
+  Id int [pk]
+  "제품명" text
+  "제품명영문" text
+  "제조사" text
+  "식약처분류설명" text
+  "식약처분류코드" text
+  "ATC코드" text
+  "급여코드" text
+  "주성분코드" text
+  CreationDateTime timestamp [not null]
+
+  Note: '60,933건'
+}
+
+Table MFDS_DrugPrdtPrmsnInfo {
+  ItemSeq varchar(50) [pk]
+  ItemName varchar(450)
+  ItemEngName varchar(450)
+  EntpName varchar(100)
+  AtcCode varchar(20)
+  EdiCode text
+  MainItemIngr text
+  CancelName varchar(50)
+  CancelDate timestamptz
+  EtcOtcCode varchar(50)
+  RareDrugYn varchar(1)
+  EntpNo varchar(50)
+  ItemPermitDate timestamptz
+  ChangeDate timestamptz
+  CreationDateTime timestamptz [default: `CURRENT_TIMESTAMP`]
+
+  Note: '44,028건'
+}
+
+Table MfdsCategoryInfo {
+  MfdsCode varchar(3) [not null]
+  CategoryName varchar(100)
+
+  Note: '197건'
+}
+
+Table PatentInfos {
+  ItemStandardCode varchar(450) [pk]
+  Name text
+  MasterIngredient text
+  RegisteredPerson text
+  RegisteredHolder text
+  RegisteredNo varchar(450) [pk, default: `''::character varying`]
+  Duration timestamp [not null]
+  RegistrationDate timestamp [not null]
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '2,868건'
+}
+
+Table PriceInfos {
+  "적용시작일자" varchar(450) [pk]
+  "약품코드" varchar(450) [pk]
+  "적용시작일" timestamp [not null]
+  "가격" numeric [not null]
+  "급여구분명" text
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+  ModifiedBy text
+
+  Note: '58,032건'
+}
+
+Table TEOUL_DRUG_INGREDIENT_INFO {
+  DRUG_INGREDIENT_CODE varchar(450) [pk]
+  INGREDIENT_NAME text
+  EFFECT_GROUP text
+  EFFECT text
+  SIDE_EFFECT_ENVELOPE text
+  SIDE_EFFECT_A4 text
+  SPECIFIC_DRUG_TAKING_DESC text
+  DRUG_KEEP_MANNER text
+  MAIN_DISEASE_CODE text
+  SUB_DISEASE_CODE text
+  SPECIAL_CONTENT_SEQ int
+  CREATE_TIME timestamp
+  UPDATE_TIME timestamp
+  SPECIAL_GUIDE text
+  PRIORITY boolean [not null]
+
+  Note: '3,924건'
+}
+
+Table __EFMigrationsHistory {
+  MigrationId varchar(150) [pk]
+  ProductVersion varchar(32) [not null]
+
+  Note: '107건'
+}
+
+Table atc_who_ephmra {
+  WHO_CODE varchar(50)
+  WHO_DESCRIPTION varchar(128)
+  WHO_NOTES varchar(512)
+  EPHMRA_CODE varchar(50)
+  EPHMRA_DESCRIPTION varchar(128)
+  EPHMRA_NOTES varchar(1024)
+
+  Note: '0건'
+}
+
+Table print_data {
+  REQ_ID bigint [pk]
+  ParmBizNo varchar(450)
+  Age int
+  Gender varchar(10)
+  TemplateType int
+  CreationDateTime timestamp [not null]
+
+  Note: '16,888,717건'
+}
+
+Table work {
+  ingredient text
+  contents text
+
+  Note: '2,450건'
+}
+
+Table "상병별처방수" {
+  "상병코드" varchar(5) [pk]
+  "처방건수" int [not null]
+  PercentageRate numeric
+
+  Note: '1,671건'
+}
+
+Table "음식물상호작용대체" {
+  "주의사항" varchar(450) [pk]
+  "주의사항2" text
+  "노출우선순위" int [not null]
+  wasNULL text
+
+  Note: '383건'
+}
+
+Table "음식물상호작용대체Work" {
+  "주의사항" varchar(450) [pk]
+  "주의사항2" text
+  "노출우선순위" int [not null]
+  wasNULL text
+
+  Note: '383건'
+}
+
+Table "제약사" {
+  "터울업체코드" int [pk]
+  modifyAt timestamp [not null]
+  modifyUser text
+  modifyUserType int [not null]
+  modifyUserIPAddress text
+  "업체명" text
+  "사업자등록번호" text
+  "등록일" timestamp [not null, default: `'0001-01-01 00:00:00'::timestamp without time zone`]
+  isDeleted boolean [not null]
+
+  Note: '0건'
+}
+
+// ============================================================
+// FK 관계 (실제 제약조건)
+// ============================================================
+
+Ref: "약국CommentManaged"."약국정보사업자등록번호" > "약국정보Managed"."사업자등록번호"
+Ref: del_InquiryComment.InquiryId > del_Inquiry.Id
+Ref: pharmport_medicine_usage.medicine_id > pharmport_medicine.medicine_id
+Ref: pharmport_medicine_usage.usage_text_id > pharmport_usage_text.usage_text_id
+Ref: pharmport_medicine_extra.medicine_id > pharmport_medicine.medicine_id
+Ref: pharmport_medicine_extra.extra_text_id > pharmport_extra_text.extra_text_id
+
+// ============================================================
+// 논리적 관계 (FK 미설정, 조인 검증 완료)
+// ============================================================
+
+// pharmport_medicine.product_code <-> ProductInfos.ProductCode (29,882건)
+Ref: pharmport_medicine.product_code - ProductInfos.ProductCode
+
+// pharmport_medicine.ingredient_code <-> 터울주성분.심평원성분코드 (29,882건)
+Ref: pharmport_medicine.ingredient_code - "터울주성분"."심평원성분코드"
+
+// ProductInfos.ManufacturerId <-> Manufacturers.ManufacturerID (47,988건)
+Ref: ProductInfos.ManufacturerId > Manufacturers.ManufacturerID
+
+// ProductInfos.MasterIngredientCode <-> 터울주성분.심평원성분코드 (11,349건)
+Ref: ProductInfos.MasterIngredientCode - "터울주성분"."심평원성분코드"
+
+// 터울주성분.약품분류ID <-> 터울약품분류.약품분류ID (12,631건)
+Ref: "터울주성분"."약품분류ID" > "터울약품분류"."약품분류ID"
+
+// 터울주성분.약효설명ID <-> 터울약효설명.약효설명ID (11,084건)
+Ref: "터울주성분"."약효설명ID" > "터울약효설명"."약효설명ID"
+
+// 터울주성분A4복약안내매핑.심평원성분코드 <-> 터울주성분.심평원성분코드
+Ref: "터울주성분A4복약안내매핑"."심평원성분코드" > "터울주성분"."심평원성분코드"
+
+// 터울주성분A4복약안내매핑.복약안내A4ID <-> 터울복약안내A4.복약안내A4ID
+Ref: "터울주성분A4복약안내매핑"."복약안내A4ID" > "터울복약안내A4"."복약안내A4ID"
+
+// 터울주성분A5복약안내매핑.심평원성분코드 <-> 터울주성분.심평원성분코드
+Ref: "터울주성분A5복약안내매핑"."심평원성분코드" > "터울주성분"."심평원성분코드"
+
+// 터울주성분A5복약안내매핑.복약안내A5ID <-> 터울복약안내A5.복약안내A5ID
+Ref: "터울주성분A5복약안내매핑"."복약안내A5ID" > "터울복약안내A5"."복약안내A5ID"
+
+// 터울주성분픽토그램매핑.심평원성분코드 <-> 터울주성분.심평원성분코드
+Ref: "터울주성분픽토그램매핑"."심평원성분코드" > "터울주성분"."심평원성분코드"
+
+// 터울주성분픽토그램매핑.픽토그램Code <-> 터울픽토그램.Code
+Ref: "터울주성분픽토그램매핑"."픽토그램Code" > "터울픽토그램".Code
+
+// 터울식별정보.ProductCode <-> ProductInfos.ProductCode
+Ref: "터울식별정보".ProductCode - ProductInfos.ProductCode
+
+// Brands.BrandId <-> BrandMappings.BrandId
+Ref: BrandMappings.BrandId > Brands.BrandId
+
+// Brands.BrandId <-> BrandProductCodeMappings.BrandId
+Ref: BrandProductCodeMappings.BrandId > Brands.BrandId
+
+// Ingredients.IngredientCode <-> IngredientMasterMapping.IngredientCode
+Ref: IngredientMasterMapping.IngredientCode > Ingredients.IngredientCode
+
+// ComplexIngredients.ComplexIngredientCode <-> ComplexIngredientMasterMappings.ComplexIngredientCode
+Ref: ComplexIngredientMasterMappings.ComplexIngredientCode > ComplexIngredients.ComplexIngredientCode

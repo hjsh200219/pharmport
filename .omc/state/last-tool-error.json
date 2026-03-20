@@ -1,0 +1,7 @@
+{
+  "tool_name": "Read",
+  "tool_input_preview": "{\"file_path\":\"/Users/hoshin/workspace/TeoulProject/pharmport/.omc/plans/enrichment-format-parity.md\",\"offset\":1998,\"limit\":300}",
+  "error": "File content (12749 tokens) exceeds maximum allowed tokens (10000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.",
+  "timestamp": "2026-03-20T01:54:44.609Z",
+  "retry_count": 1
+}

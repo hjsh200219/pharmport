@@ -1,0 +1,7 @@
+{"t":0,"agent":"system","event":"keyword_detected","keyword":"ralplan"}
+{"t":0,"agent":"a0cf1f7","agent_type":"Explore","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"a290a47","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a8a57a4","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"ac4e9d7","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"aa33b2e","agent_type":"planner","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"system","event":"skill_invoked","skill_name":"oh-my-claudecode:omc-help"}

@@ -1,0 +1,185 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1773920300462,
+  "projectRoot": "/Users/hoshin/workspace/TeoulProject/pharmport",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "requirements.txt"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pip",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "__pycache__": {
+      "path": "__pycache__",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1773920300457,
+      "keyFiles": [
+        "analysis.cpython-311.pyc",
+        "common.cpython-311.pyc",
+        "embedding_service.cpython-311.pyc"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 2,
+      "lastAccessed": 1773920300457,
+      "keyFiles": [
+        "methodology.md",
+        "unmatched-recovery.md"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "",
+      "accessCount": 53,
+      "lastAccessed": 1773971696895,
+      "type": "directory"
+    },
+    {
+      "path": "common.py",
+      "accessCount": 22,
+      "lastAccessed": 1773971973992,
+      "type": "file"
+    },
+    {
+      "path": "enrich_new_ingredient.py",
+      "accessCount": 22,
+      "lastAccessed": 1773971980548,
+      "type": "file"
+    },
+    {
+      "path": "teoul_pharminfo_full_erd.dbml",
+      "accessCount": 21,
+      "lastAccessed": 1773967259909,
+      "type": "file"
+    },
+    {
+      "path": "create_enrichment_tables.py",
+      "accessCount": 13,
+      "lastAccessed": 1773971980244,
+      "type": "file"
+    },
+    {
+      "path": "enrich_base.py",
+      "accessCount": 8,
+      "lastAccessed": 1773971974495,
+      "type": "file"
+    },
+    {
+      "path": "match_ingredient_v2.py",
+      "accessCount": 6,
+      "lastAccessed": 1773937872966,
+      "type": "file"
+    },
+    {
+      "path": "docs/methodology.md",
+      "accessCount": 5,
+      "lastAccessed": 1773922785673,
+      "type": "file"
+    },
+    {
+      "path": "analysis.py",
+      "accessCount": 5,
+      "lastAccessed": 1773922795650,
+      "type": "file"
+    },
+    {
+      "path": "docs/unmatched-recovery.md",
+      "accessCount": 5,
+      "lastAccessed": 1773922802518,
+      "type": "file"
+    },
+    {
+      "path": "CLAUDE.md",
+      "accessCount": 5,
+      "lastAccessed": 1773966130583,
+      "type": "file"
+    },
+    {
+      "path": ".env",
+      "accessCount": 5,
+      "lastAccessed": 1773971736880,
+      "type": "file"
+    },
+    {
+      "path": "embedding_service.py",
+      "accessCount": 4,
+      "lastAccessed": 1773922784717,
+      "type": "file"
+    },
+    {
+      "path": "sort_and_embed.py",
+      "accessCount": 4,
+      "lastAccessed": 1773922794924,
+      "type": "file"
+    },
+    {
+      "path": "productinfos_erd.dbml",
+      "accessCount": 4,
+      "lastAccessed": 1773967649720,
+      "type": "file"
+    },
+    {
+      "path": "match_ingredient.py",
+      "accessCount": 1,
+      "lastAccessed": 1773921481855,
+      "type": "file"
+    },
+    {
+      "path": "claude.md",
+      "accessCount": 1,
+      "lastAccessed": 1773921993074,
+      "type": "file"
+    },
+    {
+      "path": "pharmport_erd.dbml",
+      "accessCount": 1,
+      "lastAccessed": 1773966165470,
+      "type": "file"
+    },
+    {
+      "path": "enrich_opentargets.py",
+      "accessCount": 1,
+      "lastAccessed": 1773971983579,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

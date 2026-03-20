@@ -1,0 +1,437 @@
+// ==========================================================
+// ProductInfos 중심 ERD
+// teoul_pharminfo / Azure PostgreSQL
+// ==========================================================
+
+Project ProductInfos_ERD {
+  database_type: 'PostgreSQL'
+  Note: 'ProductInfos 중심 관계도'
+}
+
+// ============================================================
+// 핵심 테이블
+// ============================================================
+
+Table ProductInfos {
+  ProductCode varchar(450) [unique, not null, note: '제품 코드 (PK 역할)']
+  EdiCode varchar(450) [note: 'EDI 코드']
+  ItemStandardCode varchar(450) [note: '품목기준코드']
+  ManufacturerId int [not null, note: '제조사 ID → Manufacturers']
+  AtcCode varchar(450) [note: 'ATC 분류코드']
+  Name varchar(450) [note: '제품명']
+  BrandId int [note: '브랜드 ID → Brands']
+  MasterIngredientCode text [note: '주성분코드 → 터울주성분']
+  MfdsCode text [note: '식약처 코드']
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+  Unit text [note: '단위']
+  DosageForm text [note: '제형 코드']
+  DosageFormName text [note: '제형명']
+  DosageType text [note: '제형 유형']
+  IngredientCode text [note: '성분코드']
+  IngredientCodeWithoutStrength text [note: '함량 제외 성분코드']
+  Standard text [note: '규격']
+  Type text [note: '유형']
+  CoverType text [note: '급여 유형']
+  DataSource int
+  ModifiedBy text
+  NameEdited text
+  work text
+  BackBase64 boolean [not null]
+  BackConfirm boolean [not null]
+  BackCrop boolean [not null]
+  BackRemoveBg boolean [not null]
+  BackResize boolean [not null]
+  Base64 boolean [not null]
+  Confirm boolean [not null]
+  Crop boolean [not null]
+  IsUpdated boolean [not null]
+  RemoveBg boolean [not null]
+  Resize boolean [not null]
+  "색상뒤" text
+  "색상앞" text
+  "식별표시코드뒤" text
+  "식별표시코드앞" text
+  "약품단축길이" text
+  "약품장축길이" text
+  "표시뒤" text
+  "표시앞" text
+  NameEng text
+  UnitEn text
+  DepletedNutrients text
+  ImageModificationDate timestamp
+  MfdsImageDate timestamp
+  RemoveBgConfirm boolean [not null]
+  Name_embedding vector
+
+  Note: '48,027건 — 핵심 제품 마스터'
+}
+
+// ============================================================
+// ProductInfos → 제조사/브랜드
+// ============================================================
+
+Table Manufacturers {
+  ManufacturerID int [pk, note: '제조사 고유 ID']
+  Name varchar(450) [note: '제조사명']
+  ModificationDate timestamp [not null]
+  CreationDate timestamp [not null]
+  Url text [note: '제조사 웹사이트']
+  Name_embedding vector
+
+  Note: '659건'
+}
+
+Table Brands {
+  BrandId int [pk]
+  Name varchar(450) [note: '브랜드명']
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '29,462건'
+}
+
+Table BrandMappings {
+  BrandId int [unique, not null]
+  EdiCode varchar(450) [unique, not null]
+
+  Note: '46,201건 — BrandId ↔ EdiCode 매핑'
+}
+
+Table BrandProductCodeMappings {
+  BrandId int [pk]
+  ProductCode varchar(450) [pk]
+
+  Note: '46,193건 — BrandId ↔ ProductCode 매핑'
+}
+
+// ============================================================
+// ProductInfos → 성분 체계
+// ============================================================
+
+Table "터울주성분" {
+  "심평원성분코드" varchar(450) [pk, note: '심평원 성분 코드']
+  "약품분류ID" int [note: '→ 터울약품분류']
+  "약효설명ID" int [note: '→ 터울약효설명']
+  "성분명" text [note: '성분명 (영문)']
+  "sorted_성분명" text [note: '알파벳순 정렬']
+  "성분명한글" text
+  "고갈영양소영문" text
+  "성분명_임베딩" vector
+  "sorted_성분명_embedding" vector
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+
+  Note: '20,235건 — 심평원 기준 주성분 마스터'
+}
+
+Table "터울약품분류" {
+  "약품분류ID" int [pk]
+  "약품분류" text [note: '예: 가래 제거제']
+  EnglishText text
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+
+  Note: '612건'
+}
+
+Table "터울약효설명" {
+  "약효설명ID" int [pk]
+  "터울버전" text
+  EnglishText text
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+
+  Note: '2,670건'
+}
+
+Table MasterIngredients {
+  MasterIngredientCode varchar(450) [unique, not null, note: '주성분코드']
+  Sequence int [unique, not null]
+  IngredientName varchar(450)
+  DosageForm text [not null]
+  DosageFormName text [not null]
+  MfdsCode int [not null]
+  DosageType text [not null]
+  DosageContent numeric [not null]
+  ContentUnit text [not null]
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+  IngredientName_embedding vector
+
+  Note: '58,577건'
+}
+
+Table Ingredients {
+  IngredientCode varchar(450) [pk]
+  NormalizedIngredientName text
+  DisplayName text
+  IngredientType int [not null]
+  Strength numeric
+  ContentUnit text
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '26,634건'
+}
+
+Table IngredientMasterMapping {
+  IngredientCode varchar(450) [pk]
+  MasterIngredientCode varchar(450) [pk]
+
+  Note: '39,652건 — Ingredient ↔ MasterIngredient 매핑'
+}
+
+Table ComplexIngredients {
+  ComplexIngredientCode varchar(450) [pk]
+  NormalizedIngredientName text
+  DisplayName text
+  CreationDateTime timestamp [not null]
+  ModificationDate timestamp [not null]
+
+  Note: '8,178건'
+}
+
+Table ComplexIngredientMasterMappings {
+  ComplexIngredientCode varchar(450) [pk]
+  MasterIngredientCode varchar(450) [pk]
+
+  Note: '19,228건'
+}
+
+// ============================================================
+// 터울주성분 → 복약안내/픽토그램
+// ============================================================
+
+Table "터울복약안내A4" {
+  "복약안내A4ID" int [pk]
+  "터울버전" text
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+  "분류" int
+  EnglishText text
+  "픽토그램Code" text
+
+  Note: '8,315건'
+}
+
+Table "터울복약안내A5" {
+  "복약안내A5ID" int [pk]
+  "터울버전" text
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+  "분류" int
+  EnglishText text
+
+  Note: '1,859건'
+}
+
+Table "터울주성분A4복약안내매핑" {
+  "심평원성분코드" varchar(450) [pk]
+  "복약안내A4ID" int [pk]
+  "등록일" timestamptz [not null]
+
+  Note: '44,601건'
+}
+
+Table "터울주성분A5복약안내매핑" {
+  "심평원성분코드" varchar(450) [pk]
+  "복약안내A5ID" int [pk]
+  "등록일" timestamptz [not null]
+
+  Note: '9,602건'
+}
+
+Table "터울주성분픽토그램매핑" {
+  "심평원성분코드" varchar(450) [pk]
+  "픽토그램Code" varchar(450) [pk]
+
+  Note: '17,130건'
+}
+
+Table "터울픽토그램" {
+  Code varchar(450) [pk]
+  ContentsUrl text
+  Title text [not null]
+  "중요도" int [not null]
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+  EnglishText text
+
+  Note: '104건'
+}
+
+// ============================================================
+// ProductInfos → 코드 매핑
+// ============================================================
+
+Table ProductCodeEdiMappings {
+  ProductCode varchar(450) [unique, not null]
+  EdiCode varchar(450) [unique, not null]
+  CreationDateTime timestamp [not null]
+  DataSource int
+  ModifiedBy text
+
+  Note: '48,305건 — ProductCode ↔ EdiCode'
+}
+
+Table ProductCodeDikMappings {
+  ProductCode varchar(450) [pk]
+  DikCode varchar(450) [pk]
+  CreationDateTime timestamp [not null]
+  ModifiedBy text
+  DataSource int
+
+  Note: '8,596건 — ProductCode ↔ DikCode'
+}
+
+Table ManufacturerIdEdiMappings {
+  ManufacturerID int [unique, not null]
+  EdiCode varchar(450) [unique, not null]
+
+  Note: '46,200건 — ManufacturerID ↔ EdiCode'
+}
+
+Table ProductMedicationMappings {
+  ProductCode varchar(450) [pk]
+  MedicationId int [pk]
+  "등록일" timestamp [not null]
+
+  Note: '1,891건'
+}
+
+// ============================================================
+// ProductInfos → 벤더
+// ============================================================
+
+Table Vendor {
+  VendorId int [pk]
+  Name varchar(450)
+  ModificationDate timestamp [not null]
+  CreationDate timestamp [not null]
+
+  Note: '752건'
+}
+
+Table VendorProductMapping {
+  VendorId int [pk]
+  ProductCode varchar(450) [pk]
+
+  Note: '33,781건 — Vendor ↔ ProductCode'
+}
+
+Table VendorEdiMapping {
+  VendorId int [unique, not null]
+  EdiCode varchar(450) [unique, not null]
+
+  Note: '73,593건 — Vendor ↔ EdiCode'
+}
+
+// ============================================================
+// ProductInfos → 팜포트/터울식별정보
+// ============================================================
+
+Table pharmport_medicine {
+  medicine_id int [pk, increment]
+  medicine_name varchar(200) [not null]
+  manufacturer varchar(200)
+  color varchar(100)
+  storage text
+  ingredients text
+  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  product_code varchar(100) [note: '→ ProductInfos.ProductCode']
+  ingredient_code varchar(100) [note: '→ 터울주성분.심평원성분코드']
+  ingredient_embedding vector
+  embedding vector
+  medicine_name_embedding vector
+  manufacturer_embedding vector
+  sorted_ingredients text
+  sorted_ingredient_embedding vector
+  match_method varchar(50)
+  direct_ingredient_code varchar(100)
+
+  Note: '40,837건 — 팜포트 의약품 마스터'
+}
+
+Table "터울식별정보" {
+  ProductCode varchar(450) [pk, note: '→ ProductInfos.ProductCode']
+  "약품장축길이" text
+  "약품단축길이" text
+  "표시앞" text
+  "표시뒤" text
+  "색상앞" text
+  "색상뒤" text
+  "식별표시코드뒤" text
+  "식별표시코드앞" text
+  IsUpdated boolean [not null]
+  ModifiedBy text
+  IsDeleted boolean [not null]
+  "등록일" timestamp [not null]
+  "수정일" timestamp [not null]
+  BackBase64 boolean [not null]
+  BackConfirm boolean [not null]
+  BackCrop boolean [not null]
+  BackRemoveBg boolean [not null]
+  BackResize boolean [not null]
+  Base64 boolean [not null]
+  Confirm boolean [not null]
+  Crop boolean [not null]
+  RemoveBg boolean [not null]
+  Resize boolean [not null]
+
+  Note: '44,259건 — 터울 약품 식별(이미지/표시) 정보'
+}
+
+// ============================================================
+// 관계 (Relationships)
+// ============================================================
+
+// ProductInfos 직접 관계
+Ref: ProductInfos.ManufacturerId > Manufacturers.ManufacturerID
+Ref: ProductInfos.BrandId > Brands.BrandId
+Ref: ProductInfos.MasterIngredientCode - "터울주성분"."심평원성분코드"
+
+// 터울주성분 하위 관계
+Ref: "터울주성분"."약품분류ID" > "터울약품분류"."약품분류ID"
+Ref: "터울주성분"."약효설명ID" > "터울약효설명"."약효설명ID"
+
+// 터울주성분 → 복약안내/픽토그램
+Ref: "터울주성분A4복약안내매핑"."심평원성분코드" > "터울주성분"."심평원성분코드"
+Ref: "터울주성분A4복약안내매핑"."복약안내A4ID" > "터울복약안내A4"."복약안내A4ID"
+Ref: "터울주성분A5복약안내매핑"."심평원성분코드" > "터울주성분"."심평원성분코드"
+Ref: "터울주성분A5복약안내매핑"."복약안내A5ID" > "터울복약안내A5"."복약안내A5ID"
+Ref: "터울주성분픽토그램매핑"."심평원성분코드" > "터울주성분"."심평원성분코드"
+Ref: "터울주성분픽토그램매핑"."픽토그램Code" > "터울픽토그램".Code
+
+// 코드 매핑 (ProductCode 기준)
+Ref: ProductCodeEdiMappings.ProductCode - ProductInfos.ProductCode
+Ref: ProductCodeDikMappings.ProductCode - ProductInfos.ProductCode
+Ref: BrandProductCodeMappings.ProductCode - ProductInfos.ProductCode
+Ref: ProductMedicationMappings.ProductCode - ProductInfos.ProductCode
+Ref: VendorProductMapping.ProductCode - ProductInfos.ProductCode
+Ref: "터울식별정보".ProductCode - ProductInfos.ProductCode
+
+// EdiCode 기준 매핑
+Ref: BrandMappings.BrandId > Brands.BrandId
+Ref: ManufacturerIdEdiMappings.ManufacturerID > Manufacturers.ManufacturerID
+Ref: VendorEdiMapping.VendorId > Vendor.VendorId
+
+// 성분 체계
+Ref: IngredientMasterMapping.IngredientCode > Ingredients.IngredientCode
+Ref: ComplexIngredientMasterMappings.ComplexIngredientCode > ComplexIngredients.ComplexIngredientCode
+
+// 팜포트 연결
+Ref: pharmport_medicine.product_code - ProductInfos.ProductCode
+Ref: pharmport_medicine.ingredient_code - "터울주성분"."심평원성분코드"
