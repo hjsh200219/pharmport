@@ -13,10 +13,12 @@ Enrichment 공통 모듈 — rate limit, 상태 관리, Layer 1 자동 검증
 import logging
 import os
 import re
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Callable
 
 import psycopg2
 
@@ -484,3 +486,103 @@ class ProgressTracker:
             "elapsed_seconds": round(elapsed, 1),
             "rate_per_second": round(self.processed / elapsed, 2) if elapsed > 0 else 0,
         }
+
+
+# ---------------------------------------------------------------------------
+# 병렬 처리 유틸리티
+# ---------------------------------------------------------------------------
+
+# ProgressTracker를 thread-safe로 사용하기 위한 lock
+_tracker_lock = threading.Lock()
+
+
+def _safe_tracker_update(tracker: ProgressTracker, success: bool = True, skipped: bool = False):
+    """Thread-safe ProgressTracker 업데이트."""
+    with _tracker_lock:
+        tracker.update(success=success, skipped=skipped)
+
+
+def group_by_base(codes: list[dict], base_len: int = 4) -> dict[str, list[dict]]:
+    """심평원성분코드를 base(앞 N자리)별로 그룹핑한다.
+
+    Args:
+        codes: [{"심평원성분코드": ..., ...}, ...]
+        base_len: base 길이 (기본 4자리)
+
+    Returns:
+        {base: [코드 딕셔너리, ...]}
+    """
+    groups: dict[str, list[dict]] = {}
+    for row in codes:
+        base = row["심평원성분코드"][:base_len]
+        groups.setdefault(base, []).append(row)
+    return groups
+
+
+def parallel_process(
+    items: list,
+    process_fn: Callable,
+    workers: int = 4,
+    source: str = "parallel",
+    tracker: ProgressTracker | None = None,
+) -> list:
+    """ThreadPoolExecutor로 항목을 병렬 처리한다.
+
+    각 스크립트의 base 그룹 단위 작업을 병렬로 실행한다.
+    DB 커넥션은 워커별로 새로 생성해야 하므로 process_fn 내부에서 관리한다.
+
+    Args:
+        items: 처리할 항목 목록 (base 키 목록 등)
+        process_fn: 각 항목을 처리하는 함수. (item) -> result 형태.
+            성공 시 결과를 반환, 실패 시 예외 raise.
+        workers: 병렬 워커 수 (기본 4)
+        source: 로그용 소스 이름
+        tracker: ProgressTracker (제공 시 thread-safe 업데이트)
+
+    Returns:
+        성공한 결과 목록
+    """
+    if workers <= 1:
+        # 단일 스레드 — 기존 동작과 동일
+        results = []
+        for item in items:
+            try:
+                result = process_fn(item)
+                results.append(result)
+                if tracker:
+                    _safe_tracker_update(tracker, success=True)
+            except Exception as e:
+                logger.warning("[%s] 처리 실패: %s — %s", source, item, e)
+                if tracker:
+                    _safe_tracker_update(tracker, success=False)
+        return results
+
+    logger.info("[%s] 병렬 처리 시작: %d개 항목, %d 워커", source, len(items), workers)
+    results = []
+
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        future_to_item = {executor.submit(process_fn, item): item for item in items}
+
+        for future in as_completed(future_to_item):
+            item = future_to_item[future]
+            try:
+                result = future.result()
+                results.append(result)
+                if tracker:
+                    _safe_tracker_update(tracker, success=True)
+            except Exception as e:
+                logger.warning("[%s] 처리 실패: %s — %s", source, item, e)
+                if tracker:
+                    _safe_tracker_update(tracker, success=False)
+
+    logger.info("[%s] 병렬 처리 완료: %d/%d 성공", source, len(results), len(items))
+    return results
+
+
+def get_thread_connection(db_name: str | None = None):
+    """워커 스레드용 DB 커넥션을 반환한다.
+
+    thread-local이 아닌 새 커넥션을 매번 생성한다.
+    호출자가 반드시 close()해야 한다.
+    """
+    return get_connection(db_name)

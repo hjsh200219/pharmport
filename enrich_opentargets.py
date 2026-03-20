@@ -27,15 +27,18 @@ import logging
 import os
 import sys
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 
 from common import get_connection
 from enrich_base import (
     ProgressTracker,
+    _safe_tracker_update,
     api_call_with_retry,
     batch_insert,
     get_pending_codes,
+    get_thread_connection,
     update_status,
 )
 
@@ -297,7 +300,47 @@ def process_one(conn, code: str, chembl_id: str, disease_rows: list[dict],
 # 메인 처리 루프
 # ---------------------------------------------------------------------------
 
-def run(conn, pending: list[dict], dry_run: bool = False):
+def _process_chembl_group(chembl_id: str, code_items: list[dict],
+                          db_name: str | None, dry_run: bool) -> tuple[int, int]:
+    """워커 스레드에서 단일 ChEMBL ID 그룹을 처리한다.
+
+    Returns:
+        (processed_count, success_count)
+    """
+    conn = get_thread_connection(db_name)
+    processed = 0
+    success_count = 0
+    try:
+        # API 호출: ChEMBL ID당 1회
+        try:
+            disease_rows = api_call_with_retry(SOURCE, fetch_linked_diseases, chembl_id)
+        except Exception as e:
+            logger.error("[%s] ChEMBL %s API 호출 실패: %s", SOURCE, chembl_id, e)
+            for item in code_items:
+                update_status(conn, item["심평원성분코드"], "disease",
+                              success=False, error=str(e))
+                processed += 1
+            return processed, success_count
+
+        logger.debug(
+            "[%s] ChEMBL %s → 질병 %d건 (score >= %.1f 적용 전)",
+            SOURCE, chembl_id, len(disease_rows), MIN_ASSOCIATION_SCORE,
+        )
+
+        for item in code_items:
+            code = item["심평원성분코드"]
+            ok = process_one(conn, code, chembl_id, disease_rows, dry_run=dry_run)
+            processed += 1
+            if ok:
+                success_count += 1
+    finally:
+        conn.close()
+
+    return processed, success_count
+
+
+def run(conn, pending: list[dict], dry_run: bool = False, workers: int = 1,
+        db_name: str | None = None):
     """pending 목록 전체에 대한 enrichment를 실행한다."""
     if not pending:
         logger.info("처리할 항목 없음")
@@ -316,34 +359,55 @@ def run(conn, pending: list[dict], dry_run: bool = False):
     # ChEMBL ID 기준 그룹화 (API 호출 최소화)
     groups = group_by_base(codes_with_chembl)
     logger.info(
-        "처리 대상: %d건 (고유 ChEMBL ID: %d개)",
-        len(codes_with_chembl), len(groups),
+        "처리 대상: %d건 (고유 ChEMBL ID: %d개, workers: %d)",
+        len(codes_with_chembl), len(groups), workers,
     )
 
     tracker = ProgressTracker(total=len(codes_with_chembl), source=SOURCE, log_interval=20)
 
-    for chembl_id, code_items in groups.items():
-        # API 호출: ChEMBL ID당 1회
-        try:
-            disease_rows = api_call_with_retry(SOURCE, fetch_linked_diseases, chembl_id)
-        except Exception as e:
-            logger.error("[%s] ChEMBL %s API 호출 실패: %s", SOURCE, chembl_id, e)
+    if workers > 1:
+        # 병렬 처리
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = {
+                executor.submit(
+                    _process_chembl_group, chembl_id, code_items, db_name, dry_run,
+                ): chembl_id
+                for chembl_id, code_items in groups.items()
+            }
+            for future in as_completed(futures):
+                chembl_id = futures[future]
+                try:
+                    processed, success_count = future.result()
+                    for _ in range(success_count):
+                        _safe_tracker_update(tracker, success=True)
+                    for _ in range(processed - success_count):
+                        _safe_tracker_update(tracker, success=False)
+                except Exception as e:
+                    logger.error("[%s] ChEMBL %s 워커 오류: %s", SOURCE, chembl_id, e)
+    else:
+        # 순차 처리 (기존 로직, 전달받은 conn 사용)
+        for chembl_id, code_items in groups.items():
+            # API 호출: ChEMBL ID당 1회
+            try:
+                disease_rows = api_call_with_retry(SOURCE, fetch_linked_diseases, chembl_id)
+            except Exception as e:
+                logger.error("[%s] ChEMBL %s API 호출 실패: %s", SOURCE, chembl_id, e)
+                for item in code_items:
+                    update_status(conn, item["심평원성분코드"], "disease",
+                                  success=False, error=str(e))
+                    tracker.update(success=False)
+                continue
+
+            logger.debug(
+                "[%s] ChEMBL %s → 질병 %d건 (score >= %.1f 적용 전)",
+                SOURCE, chembl_id, len(disease_rows), MIN_ASSOCIATION_SCORE,
+            )
+
+            # 같은 ChEMBL ID를 공유하는 코드들에 동일 결과 저장
             for item in code_items:
-                update_status(conn, item["심평원성분코드"], "disease",
-                              success=False, error=str(e))
-                tracker.update(success=False)
-            continue
-
-        logger.debug(
-            "[%s] ChEMBL %s → 질병 %d건 (score >= %.1f 적용 전)",
-            SOURCE, chembl_id, len(disease_rows), MIN_ASSOCIATION_SCORE,
-        )
-
-        # 같은 ChEMBL ID를 공유하는 코드들에 동일 결과 저장
-        for item in code_items:
-            code = item["심평원성분코드"]
-            success = process_one(conn, code, chembl_id, disease_rows, dry_run=dry_run)
-            tracker.update(success=success)
+                code = item["심평원성분코드"]
+                success = process_one(conn, code, chembl_id, disease_rows, dry_run=dry_run)
+                tracker.update(success=success)
 
     summary = tracker.summary()
     logger.info(
@@ -365,6 +429,8 @@ def main():
     parser.add_argument("--limit", type=int, default=0, help="처리 건수 제한 (0=전체)")
     parser.add_argument("--dev", action="store_true", help="dev DB 사용")
     parser.add_argument("--dry-run", action="store_true", help="DB 저장 없이 테스트 출력")
+    parser.add_argument("--workers", type=int, default=1,
+                        help="병렬 워커 수 (기본 1=순차처리)")
     args = parser.parse_args()
 
     db_name = os.getenv("DEV_DATABASE_NAME") if args.dev else None
@@ -397,7 +463,7 @@ def main():
             pending = get_pending_codes(conn, "disease", limit=args.limit)
             logger.info("미완료 disease_fetched: %d건", len(pending))
 
-        run(conn, pending, dry_run=args.dry_run)
+        run(conn, pending, dry_run=args.dry_run, workers=args.workers, db_name=db_name)
 
     finally:
         conn.close()
