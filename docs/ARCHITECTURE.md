@@ -63,7 +63,6 @@ teoul_pharminfo_v2 (터울복약안내A4, 터울약효설명, etc.)
 | `match_ingredient_v2.py` | Method 2: GT-independent 3-filter matching (current, 0% error) |
 | `match_ingredient.py` | Method 1: single-channel matching (deprecated) |
 | `sort_and_embed.py` | Sorted ingredient embedding pipeline |
-| `analysis.py` | Table data access helpers |
 
 ### Enrichment Layer (Phase 1)
 | File | Purpose |

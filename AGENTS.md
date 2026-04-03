@@ -54,7 +54,7 @@ L4 Orchestration   run_pipeline.py
 L3 Generation      build_profiles.py, create_v2_tables.py, generate_medication_guide.py, generate_yakho_desc.py
 L2 Enrichment      create_enrichment_tables.py, enrich_chembl/fda/opentargets/pubmed/trials.py, enrichment_report.py
 L1 Matching        match_ingredient_v2.py, sort_and_embed.py
-L0 Infrastructure  common.py, embedding_service.py, enrich_base.py, analysis.py
+L0 Infrastructure  common.py, embedding_service.py, enrich_base.py
 ```
 
 **Rule**: Each layer imports only from L0. Cross-layer data flows through the database, not imports. See [layer-rules.md](docs/design-docs/layer-rules.md).
@@ -102,26 +102,6 @@ All scripts support: `--dry-run`, `--limit N`, `--dev`, `--workers N`
 3. Query enrichment data from `edb_*` tables
 4. Write results to `teoul_pharminfo_v2`
 5. Use profile hash for deduplication
-
-## ERD Reference
-
-Full ERD details backed up in [docs/references/claude-md-original.md](docs/references/claude-md-original.md). Key tables:
-- `pharmport_medicine` (40,837) -- hub table with embeddings
-- `터울주성분` (20,235) -- HIRA ingredient master
-- `ProductInfos` (48,027) -- product details
-- `edb_*` tables -- enrichment data
-- V2 DB: `터울복약안내A4/A5`, `터울약효설명`, `터울복약프로파일`
-
-## Existing Documentation
-
-| File | Content |
-|------|---------|
-| `docs/enrichment-format-parity.md` | Enrichment + Format Parity master plan (RALPLAN-DR) |
-| `docs/unmatched-recovery.md` | 11,641 unmatched records recovery strategy |
-| `docs/methodology.md` | 3-filter matching methodology |
-| `pharmport_erd.dbml` | Core PharmPort DBML schema |
-| `productinfos_erd.dbml` | ProductInfos DBML schema |
-| `teoul_pharminfo_full_erd.dbml` | Full database DBML schema |
 
 ## Environment Setup
 

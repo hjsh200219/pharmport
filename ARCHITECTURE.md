@@ -79,7 +79,6 @@ teoul_pharminfo_v2 (터울복약안내, 터울약효설명)
 | `common.py` | DB connection factory (SSL, keepalive, multi-DB routing) |
 | `embedding_service.py` | Azure OpenAI embedding API, batch parallelism |
 | `enrich_base.py` | Rate limiter, status tracking, batch insert, Layer 1 validation |
-| `analysis.py` | Table data access helpers |
 
 ### L1 -- Matching
 | File | Responsibility |

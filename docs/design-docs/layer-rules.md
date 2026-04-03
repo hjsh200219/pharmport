@@ -4,7 +4,7 @@
 
 ```
 Layer 0 — Infrastructure
-  common.py, embedding_service.py, enrich_base.py, analysis.py
+  common.py, embedding_service.py, enrich_base.py
 
 Layer 1 — Matching
   match_ingredient_v2.py, match_ingredient.py, sort_and_embed.py
