@@ -50,13 +50,9 @@
 - **Impact**: Only Case A (existing ingredient reuse) works; compound/new enrichment is stubbed
 - **Resolution**: Implement or document as intentionally deferred
 
-### TD-009: Incomplete requirements.txt
-- **Severity**: Medium
-- **Description**: `requirements.txt` was missing `anthropic`, `requests`, and `httpx` which are imported by `generate_medication_guide.py`, `generate_yakho_desc.py`, and multiple `enrich_*.py` scripts.
-- **Impact**: Fresh installs would fail on import
-- **Resolution**: Fixed -- added missing packages (2026-04-03)
-
 ## Resolved Tech Debt
 
 ### TD-009: Incomplete requirements.txt (Fixed 2026-04-03)
-- Added `anthropic`, `requests`, `httpx` to `requirements.txt`
+- **Severity**: Medium
+- **Description**: `requirements.txt` was missing `anthropic`, `requests`, and `httpx`
+- **Resolution**: Added missing packages

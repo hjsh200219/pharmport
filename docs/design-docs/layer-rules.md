@@ -51,7 +51,7 @@ Layer 3 -> Layer 1, 2          (generation must not import enrichment scripts)
 ## Import Graph (Current)
 
 ```
-common.py         <- enrich_base.py, analysis.py, all enrich_*.py, all generate_*.py, all create_*.py
+common.py         <- enrich_base.py, all enrich_*.py, all generate_*.py, all create_*.py
 embedding_service.py <- sort_and_embed.py, match_ingredient_v2.py, match_ingredient.py
 enrich_base.py    <- enrich_chembl.py, enrich_fda.py, enrich_opentargets.py,
                      enrich_pubmed.py, enrich_trials.py, enrich_new_ingredient.py,
