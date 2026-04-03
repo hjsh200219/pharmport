@@ -7,7 +7,7 @@
 | Data Accuracy | 10/10 | 0% error rate on ingredient matching (verified on 20,666 GT records) |
 | Code Structure | 8/10 | Clean layer separation, consistent patterns, some SQL interpolation debt |
 | Resilience | 9/10 | Idempotent, resumable, timeout-protected, failure-isolated |
-| Documentation | 8/10 | DBML schemas, methodology docs, architecture docs present |
+| Documentation | 7/10 | DBML schemas, methodology docs present; duplicate ARCHITECTURE.md, dead analysis.py reference |
 | Testing | 3/10 | No automated test suite; relies on GT validation and dry-run |
 | Security | 7/10 | SSL enforced, .env for secrets, but SQL interpolation in batch_insert |
 | Operability | 9/10 | Comprehensive CLI flags, dry-run, monitoring, selective re-execution |
@@ -46,3 +46,6 @@
 2. Replace SQL f-strings with `psycopg2.sql` module
 3. Pin dependency versions
 4. Add embedding dimension validation
+5. Consolidate duplicate ARCHITECTURE.md (root vs docs/)
+6. Remove or archive dead `analysis.py` module
+7. Consolidate duplicated `ParsedCode`/`parse_code()` into `enrich_base.py`

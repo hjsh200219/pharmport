@@ -32,6 +32,31 @@
 - **Impact**: Reproducibility risk across environments
 - **Resolution**: Pin versions or add a lock file
 
+### TD-006: Dead Module -- analysis.py
+- **Severity**: Low
+- **Description**: `analysis.py` is listed as L0 Infrastructure in ARCHITECTURE.md but is not imported by any other module in the project. All its exports (`fetch_table`, `fetch_medicine`, etc.) are unused.
+- **Impact**: Dead code adds confusion; listed in docs as active module
+- **Resolution**: Remove file or convert to a utility script with a `__main__` guard
+
+### TD-007: Duplicated Ingredient Code Parser
+- **Severity**: Low
+- **Description**: `ParsedCode` dataclass and `parse_code()` function are duplicated across `enrich_new_ingredient.py` (L2), `enrich_fda.py` (L2), and partially in `build_profiles.py` (L3). The `enrich_fda.py` version even has a comment acknowledging the duplication.
+- **Impact**: Bug risk from divergent copies; violates "shared utility > inline helper" principle
+- **Resolution**: Move canonical `ParsedCode` + `parse_code()` to `enrich_base.py` (L0), import from there
+
+### TD-008: Incomplete enrich_new_ingredient.py (TODO Stubs)
+- **Severity**: Low
+- **Description**: Three TODO comments in `enrich_new_ingredient.py` indicate Case B (compound) and Case C (fully new) enrichment paths are not implemented (lines 292, 300, 306).
+- **Impact**: Only Case A (existing ingredient reuse) works; compound/new enrichment is stubbed
+- **Resolution**: Implement or document as intentionally deferred
+
+### TD-009: Incomplete requirements.txt
+- **Severity**: Medium
+- **Description**: `requirements.txt` was missing `anthropic`, `requests`, and `httpx` which are imported by `generate_medication_guide.py`, `generate_yakho_desc.py`, and multiple `enrich_*.py` scripts.
+- **Impact**: Fresh installs would fail on import
+- **Resolution**: Fixed -- added missing packages (2026-04-03)
+
 ## Resolved Tech Debt
 
-_None yet._
+### TD-009: Incomplete requirements.txt (Fixed 2026-04-03)
+- Added `anthropic`, `requests`, `httpx` to `requirements.txt`
