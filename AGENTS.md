@@ -167,7 +167,7 @@ L0 Infrastructure  common.py, embedding_service.py, enrich_base.py, analysis.py
 ## Environment Setup
 
 ```bash
-cp .env.example .env    # Configure credentials
+# Create .env with required credentials (see docs/SECURITY.md for variable list)
 pip install -r requirements.txt
 python run_pipeline.py --dry-run --limit 5   # Verify setup
 ```
