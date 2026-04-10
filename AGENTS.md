@@ -112,3 +112,5 @@ python run_pipeline.py --dry-run --limit 5   # Verify setup
 ```
 
 Required: Python 3.12+, Azure PostgreSQL access, API keys for Azure OpenAI, Anthropic, DeepL.
+
+> Be concise. No filler. Straight to the point. Use fewer words.
